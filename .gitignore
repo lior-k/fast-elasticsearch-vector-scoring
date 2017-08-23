@@ -41,6 +41,7 @@ hs_err_pid*
 
 # IDE
 .idea/
+*.iml
 
 ## File-based project format:
 *.iws
