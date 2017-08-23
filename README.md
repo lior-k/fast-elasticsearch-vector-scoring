@@ -1,9 +1,9 @@
 # Fast Elasticsearch Vector Scoring
 
-This Plugin allows you to score documents based on embedding-vectors, usin dot product ot cosine similarity.
+This Plugin allows you to score Elasticsearch documents based on embedding-vectors, using dot-product or cosine-similarity.
 
 ## General
-* This plugin was inspired from [This elasticsearch vector scoring plugin](https://github.com/MLnick/elasticsearch-vector-scoring) and [this disscution](https://discuss.elastic.co/t/vector-scoring/85227/6) to achive 10 times faster processing.
+* This plugin was inspired from [This elasticsearch vector scoring plugin](https://github.com/MLnick/elasticsearch-vector-scoring) and [this discussion](https://discuss.elastic.co/t/vector-scoring/85227/6) to achieve 10 times faster processing over the original.
 give it a try.
 * I gained this substantial speed improvement by using the lucene index directly
 * I developed it for my workplace which needs to pick KNN from a set of ~4M vectors. our current ES setup is able to answer this in ~80ms
@@ -21,7 +21,8 @@ give it a try.
 
 ## Usage
 
-* each document you score should have a field containing the base64 representation of your vector. for example:
+### Documents
+* Each document you score should have a field containing the base64 representation of your vector. for example:
 ```
    {
    	"id": 1,
@@ -29,8 +30,18 @@ give it a try.
    	"embedding_vector": "v7l48eAAAAA/s4VHwAAAAD+R7I5AAAAAv8MBMAAAAAA/yEI3AAAAAL/IWkeAAAAAv7s480AAAAC/v6DUgAAAAL+wJi0gAAAAP76VqUAAAAC/sL1ZYAAAAL/dyq/gAAAAP62FVcAAAAC/tQRvYAAAAL+j6ycAAAAAP6v1KcAAAAC/bN5hQAAAAL+u9ItAAAAAP4ckTsAAAAC/pmkjYAAAAD+cYpwAAAAAP5renEAAAAC/qY0HQAAAAD+wyYGgAAAAP5WrCcAAAAA/qzjTQAAAAD++LBzAAAAAP49wNKAAAAC/vu/aIAAAAD+hqXfAAAAAP4FfNCAAAAA/pjC64AAAAL+qwT2gAAAAv6S3OGAAAAC/gfMtgAAAAD/If5ZAAAAAP5mcXOAAAAC/xYAU4AAAAL+2nlfAAAAAP7sCXOAAAAA/petBIAAAAD9soYnAAAAAv5R7X+AAAAC/pgM/IAAAAL+ojI/gAAAAP2gPz2AAAAA/3FonoAAAAL/IHg1AAAAAv6p1SmAAAAA/tvKlQAAAAD/I2OMAAAAAP3FBiCAAAAA/wEd8IAAAAL94wI9AAAAAP2Y1IIAAAAA/rnS4wAAAAL9vriVgAAAAv1QxoCAAAAC/1/qu4AAAAL+inZFAAAAAv7aGA+AAAAA/lqYVYAAAAD+kNP0AAAAAP730BiAAAAA="
    }
    ```
-* the vector can be of any dimension
-* for querying the 100 KNN docuemnts use this POST message on your ES index:
+* Use this field mapping:
+```
+    {
+        "embedding_vector": {
+        "type": "binary",
+        "doc_values": true
+    }
+```
+* The vector can be of any dimension
+
+### Querying
+* For querying the 100 KNN docuemnts use this POST message on your ES index:
  
 ```{
      "query": {
@@ -53,6 +64,11 @@ give it a try.
    }
 ```
 * The example above shows a vector of 64 dimensions
+* Parameters:
+   1. `field`: The field containing the base64 vector.
+   2. `cosine`: Boolean. if true - use cosine-similarity, else use dot-product.
+   3. `vector`: The vector (comma separated) to compare to.
+ 
 
 
 
