@@ -1,6 +1,5 @@
 package com.liorkn.elasticsearch.service;
 
-import com.google.common.collect.ImmutableMap;
 import com.liorkn.elasticsearch.script.VectorScoreScript;
 import org.apache.lucene.index.LeafReaderContext;
 import org.elasticsearch.common.Nullable;
@@ -25,37 +24,24 @@ public class VectorScoringScriptEngineService extends AbstractComponent implemen
 
     public static final String NAME = "knn";
 
-    private final ImmutableMap<String, NativeScriptFactory> scripts;
-
-
     @Inject
-    public VectorScoringScriptEngineService(Settings settings, Map<String, NativeScriptFactory> scripts) {
+    public VectorScoringScriptEngineService(Settings settings) {
         super(settings);
-        this.scripts = ImmutableMap.copyOf(scripts);
     }
 
     @Override
-    public String[] types() {
-        return new String[]{NAME};
+    public String getType() {
+        return NAME;
     }
 
     @Override
-    public String[] extensions() {
-        return new String[]{NAME};
+    public String getExtension() {
+        return NAME;
     }
 
     @Override
-    public boolean sandboxed() {
-        return false;
-    }
-
-    @Override
-    public Object compile(String script, Map<String, String> params) {
-        NativeScriptFactory scriptFactory = scripts.get(script);
-        if (scriptFactory != null) {
-            return scriptFactory;
-        }
-        throw new IllegalArgumentException("knn script [" + script + "] not found");
+    public Object compile(String script, String source, Map<String, String> params) {
+    		return new VectorScoreScript.Factory();
     }
 
     @Override

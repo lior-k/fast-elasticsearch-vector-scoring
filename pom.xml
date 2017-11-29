@@ -3,39 +3,21 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
-
-    <parent>
-        <groupId>org.elasticsearch.plugin</groupId>
-        <artifactId>plugins</artifactId>
-        <version>2.4.4</version>
-    </parent>
-
+    
     <name>elasticsearch-binary-vector-scoring</name>
     <groupId>com.liorkn.elasticsearch</groupId>
     <artifactId>elasticsearch-binary-vector-scoring</artifactId>
-    <version>2.4.4</version>
+    <version>5.2.2</version>
     <description>ElasticSearch Plugin for Binary Vector Scoring</description>
-
+    
     <licenses>
-        <license>
+    		<license>
             <name>The Apache Software License, Version 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-    <!-- ============================================================= -->
-    <!-- Most of the build and assembly logic is defined in the parent -->
-    <!-- pom. We just need to override a few settings here             -->
-    <!-- ============================================================= -->
-
+    
     <properties>
         <!-- define class name for the descriptor file -->
         <elasticsearch.plugin.classname>com.liorkn.elasticsearch.plugin.VectorScoringPlugin</elasticsearch.plugin.classname>
@@ -44,15 +26,26 @@
         <elasticsearch.license.header>${project.basedir}/src/main/resources/license-check/vector_scoring_license_header.txt</elasticsearch.license.header>
         <elasticsearch.license.headerDefinition>${project.basedir}/src/main/resources/license-check/license_header_definition.xml</elasticsearch.license.headerDefinition>
 
-        <!-- define where to find integration rest tests -->
         <tests.ifNoTests>warn</tests.ifNoTests>
-        <!--
-        <tests.rest.suite>vectorscoring</tests.rest.suite>
-        <tests.rest.load_packaged>false</tests.rest.load_packaged>
-        -->
+		<elasticsearch.version>5.2.2</elasticsearch.version>
     </properties>
-
-    <!-- needed for the snapshots of elasticsearch -->
+    
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+			<groupId>com.google.collections</groupId>
+			<artifactId>google-collections</artifactId>
+			<version>1.0</version>
+		</dependency>
+    </dependencies>
+    
+   <!-- needed for the snapshots of elasticsearch -->
     <repositories>
         <repository>
             <id>oss-snapshots</id>
@@ -62,23 +55,16 @@
     </repositories>
 
     <build>
+    		<resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>plugin-descriptor.properties</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>2.5.2</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -87,7 +73,23 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <outputDirectory>${project.build.directory}/releases/</outputDirectory>
+                    <descriptor>${basedir}/src/main/assemblies/plugin.xml</descriptor>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
