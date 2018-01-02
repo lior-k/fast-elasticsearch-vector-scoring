@@ -10,12 +10,13 @@ give it a try.
 
 
 ## Elasticsearch version
-* Currently designed for elasticsearch 2.44. stay tuned for ES 5.5
+* Currently designed for elasticsearch 5.2.2. stay tuned for ES 5.5
   
 
 ## Maven configuration
 * Clone the project
-* `mvn clean install` to compile the plugin jar file
+* `mvn package` to compile the plugin as a zip file
+* In Elasticsearch run `elasticsearch-plugin install file:/PATH_TO_ZIP` to install plugin
 
 
 
@@ -41,7 +42,7 @@ give it a try.
 * The vector can be of any dimension
 
 ### Querying
-* For querying the 100 KNN docuemnts use this POST message on your ES index:
+* For querying the 100 KNN documents use this POST message on your ES index:
  
 ```{
      "query": {

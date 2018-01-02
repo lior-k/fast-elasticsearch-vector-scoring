@@ -110,8 +110,14 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
         public boolean needsScores() {
             return false;
         }
+        
+        @Override
+        public String getName() {
+            return SCRIPT_NAME;
+        }
     }
-
+    
+    
     /**
      * Init
      * @param params index that a scored are placed in this parameter. Initialize them here.
@@ -125,7 +131,7 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
 
         final Object field = params.get("field");
         if (field == null)
-            throw new ScriptException("binary_vector_score script requires field input");
+            throw new IllegalArgumentException("binary_vector_score script requires field input");
         this.field = field.toString();
 
         // get query inputVector - convert to primitive
