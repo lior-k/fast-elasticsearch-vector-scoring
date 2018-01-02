@@ -110,13 +110,7 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
         public boolean needsScores() {
             return false;
         }
-        
-        @Override
-        public String getName() {
-            return SCRIPT_NAME;
         }
-    }
-    
     
     /**
      * Init

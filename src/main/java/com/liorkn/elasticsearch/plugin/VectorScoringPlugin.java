@@ -15,30 +15,41 @@ package com.liorkn.elasticsearch.plugin;
 
 import com.liorkn.elasticsearch.script.VectorScoreScript;
 import com.liorkn.elasticsearch.service.VectorScoringScriptEngineService;
-
-import java.util.Collections;
-import java.util.List;
-
-import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugins.Plugin;
-import org.elasticsearch.plugins.ScriptPlugin;
-import org.elasticsearch.script.NativeScriptFactory;
-import org.elasticsearch.script.ScriptEngineService;
+import org.elasticsearch.script.ScriptModule;
 
 /**
  * This class is instantiated when Elasticsearch loads the plugin for the
  * first time. If you change the name of this plugin, make sure to update
  * src/main/resources/es-plugin.properties file that points to this class.
  */
-public final class VectorScoringPlugin extends Plugin implements ScriptPlugin {
+public final class VectorScoringPlugin extends Plugin {
 	
+    /**
+     * The name of the plugin.
+     * <p>
+     * This name will be used by elasticsearch in the log file to refer to this plugin.
+     *
+     * @return plugin name.
+     */
 	@Override
-    public List<NativeScriptFactory> getNativeScripts() {
-        return Collections.singletonList(new VectorScoreScript.Factory());
+    public final String name() {
+        return "binary-vector-scoring";
     }
 	
+    /**
+     * The description of the plugin.
+     *
+     * @return plugin description
+     */
 	@Override
-	public ScriptEngineService getScriptEngineService(Settings settings) {
-        return new VectorScoringScriptEngineService(settings);
+    public final String description() {
+        return "Binary vector scoring";
+    }
+
+    public final void onModule(ScriptModule module) {
+        // Register vector scoring script.
+        module.registerScript(VectorScoreScript.SCRIPT_NAME, VectorScoreScript.Factory.class);
+        module.addScriptEngine(VectorScoringScriptEngineService.class);
     }
 }
