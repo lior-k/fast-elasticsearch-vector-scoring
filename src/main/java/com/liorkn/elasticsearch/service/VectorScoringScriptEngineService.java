@@ -9,7 +9,6 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.script.CompiledScript;
 import org.elasticsearch.script.ExecutableScript;
 import org.elasticsearch.script.LeafSearchScript;
-import org.elasticsearch.script.NativeScriptFactory;
 import org.elasticsearch.script.ScriptEngineService;
 import org.elasticsearch.script.SearchScript;
 import org.elasticsearch.search.lookup.SearchLookup;
@@ -30,6 +29,17 @@ public class VectorScoringScriptEngineService extends AbstractComponent implemen
     }
 
     @Override
+    public Object compile(String scriptName, String scriptSource, Map<String, String> params) {
+        return new VectorScoreScript.Factory();
+    }
+
+
+    @Override
+    public boolean isInlineScriptEnabled() {
+        return true;
+    }
+
+    @Override
     public String getType() {
         return NAME;
     }
@@ -40,19 +50,14 @@ public class VectorScoringScriptEngineService extends AbstractComponent implemen
     }
 
     @Override
-    public Object compile(String script, String source, Map<String, String> params) {
-    		return new VectorScoreScript.Factory();
-    }
-
-    @Override
     public ExecutableScript executable(CompiledScript compiledScript, @Nullable Map<String, Object> vars) {
-        NativeScriptFactory scriptFactory = (NativeScriptFactory) compiledScript.compiled();
+        VectorScoreScript.Factory scriptFactory = (VectorScoreScript.Factory) compiledScript.compiled();
         return scriptFactory.newScript(vars);
     }
 
     @Override
     public SearchScript search(CompiledScript compiledScript, final SearchLookup lookup, @Nullable final Map<String, Object> vars) {
-        final NativeScriptFactory scriptFactory = (NativeScriptFactory) compiledScript.compiled();
+        final VectorScoreScript.Factory scriptFactory = (VectorScoreScript.Factory) compiledScript.compiled();
         final VectorScoreScript script = (VectorScoreScript) scriptFactory.newScript(vars);
         return new SearchScript() {
             @Override

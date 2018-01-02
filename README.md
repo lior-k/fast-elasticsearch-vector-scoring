@@ -10,8 +10,10 @@ give it a try.
 
 
 ## Elasticsearch version
-* Currently designed for elasticsearch 5.2.2. stay tuned for ES 5.5
-  
+* Currently designed for Elasticsearch 5.6.0.
+* for Elasticsearch 5.2.2 use branch `es-5.2.2`
+* for Elasticsearch 2.4.4 use branch `es-2.4.4`
+
 
 ## Maven configuration
 * Clone the project

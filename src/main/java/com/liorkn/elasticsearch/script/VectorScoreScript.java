@@ -14,14 +14,12 @@ Delimited Payload Token Filter: https://www.elastic.co/guide/en/elasticsearch/re
 
 package com.liorkn.elasticsearch.script;
 
-import com.liorkn.elasticsearch.plugin.VectorScoringPlugin;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.store.ByteArrayDataInput;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.script.ExecutableScript;
 import org.elasticsearch.script.LeafSearchScript;
-import org.elasticsearch.script.NativeScriptFactory;
 import org.elasticsearch.script.ScriptException;
 
 import java.nio.ByteBuffer;
@@ -87,7 +85,7 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
      * {@link VectorScoringPlugin#onModule(org.elasticsearch.script.ScriptModule)}
      * method when the plugin is loaded.
      */
-    public static class Factory implements NativeScriptFactory {
+    public static class Factory {
 
         /**
          * This method is called for every search on every shard.
@@ -96,7 +94,6 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
          *            list of script parameters passed with the query
          * @return new native script
          */
-        @Override
         public ExecutableScript newScript(@Nullable Map<String, Object> params) throws ScriptException {
             return new VectorScoreScript(params);
         }
@@ -106,24 +103,19 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
          *
          * @return {@code true} if scores are needed.
          */
-        @Override
         public boolean needsScores() {
             return false;
         }
-        
-        @Override
-        public String getName() {
-            return SCRIPT_NAME;
-        }
+
     }
-    
+
     
     /**
      * Init
      * @param params index that a scored are placed in this parameter. Initialize them here.
      */
     @SuppressWarnings("unchecked")
-    public VectorScoreScript(Map<String, Object> params) throws ScriptException {
+    public VectorScoreScript(Map<String, Object> params) {
         final Object cosineBool = params.get("cosine");
         cosine = cosineBool != null ?
                 (boolean)cosineBool :
