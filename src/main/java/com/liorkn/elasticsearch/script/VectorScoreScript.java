@@ -14,8 +14,8 @@ Delimited Payload Token Filter: https://www.elastic.co/guide/en/elasticsearch/re
 
 package com.liorkn.elasticsearch.script;
 
+import com.liorkn.elasticsearch.Util;
 import org.apache.lucene.index.BinaryDocValues;
-import org.apache.lucene.search.Scorer;
 import org.apache.lucene.store.ByteArrayDataInput;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.script.ExecutableScript;
@@ -32,13 +32,12 @@ import java.util.Map;
  */
 public final class VectorScoreScript implements LeafSearchScript, ExecutableScript {
 
-    //    private final static ESLogger logger = ESLoggerFactory.getLogger(VectorScoreScript.class.getName());
-    public final static String SCRIPT_NAME = "binary_vector_score";
+    public static final String SCRIPT_NAME = "binary_vector_score";
+
+    private static final int DOUBLE_SIZE = 8;
 
     // the field containing the vectors to be scored against
     public final String field;
-
-    private static final int DOUBLE_SIZE = 8;
 
     private int docId;
     private BinaryDocValues binaryEmbeddingReader;
@@ -49,24 +48,15 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
     private final boolean cosine;
 
     @Override
-    public void setScorer(Scorer scorer) {
-    }
-    public void setSource(Map<String, Object> source) {
-    }
-    public float runAsFloat() {
-        return ((Number)this.run()).floatValue();
-    }
-
     public long runAsLong() {
         return ((Number)this.run()).longValue();
     }
+    @Override
     public double runAsDouble() {
         return ((Number)this.run()).doubleValue();
     }
-    public Object unwrap(Object value) {
-        return value;
-    }
-
+    @Override
+    public void setNextVar(String name, Object value) {}
     @Override
     public void setDocument(int docId) {
         this.docId = docId;
@@ -127,17 +117,27 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
         this.field = field.toString();
 
         // get query inputVector - convert to primitive
-        final ArrayList<Double> tmp = (ArrayList<Double>) params.get("vector");
-        this.inputVector = new double[tmp.size()];
-        for (int i = 0; i < inputVector.length; i++) {
-            inputVector[i] = tmp.get(i);
+
+        final Object vector = params.get("vector");
+        if(vector != null) {
+            final ArrayList<Double> tmp = (ArrayList<Double>) vector;
+            inputVector = new double[tmp.size()];
+            for (int i = 0; i < inputVector.length; i++) {
+                inputVector[i] = tmp.get(i);
+            }
+        } else {
+            final Object encodedVector = params.get("encoded_vector");
+            if(encodedVector == null) {
+                throw new IllegalArgumentException("Must have at 'vector' or 'encoded_vector' as a parameter");
+            }
+            inputVector = Util.convertBase64ToArray((String) encodedVector);
         }
 
         if(cosine) {
             // calc magnitude
             double queryVectorNorm = 0.0;
             // compute query inputVector norm once
-            for (double v : this.inputVector) {
+            for (double v : inputVector) {
                 queryVectorNorm += v * v;
             }
             magnitude =  Math.sqrt(queryVectorNorm);
@@ -146,9 +146,7 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
         }
     }
 
-    @Override
-    public void setNextVar(String name, Object value) {
-    }
+
 
     /**
      * Called for each document
