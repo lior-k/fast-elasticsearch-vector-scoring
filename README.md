@@ -144,5 +144,11 @@ def encode_array(arr):
    3. `vector`: The vector (comma separated) to compare to.
  
 
+* Question: I've encountered the error `java.lang.IllegalStateException: binaryEmbeddingReader can't be null` while running the query. what should I do?
+
+    Answer: this error happens when the plugin fails to access the field you specified in the `field` parameter in at least one of the documents.
+
+    To solve it: make sure that **all** the documents in your index contains the filed you specified in the `field` parameter.
+see more details [here](https://github.com/lior-k/fast-elasticsearch-vector-scoring/issues/6)
 
 
