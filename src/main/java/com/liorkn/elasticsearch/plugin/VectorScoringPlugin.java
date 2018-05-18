@@ -30,4 +30,6 @@ public final class VectorScoringPlugin extends Plugin implements ScriptPlugin {
     public final ScriptEngineService getScriptEngineService(Settings settings) {
         return new VectorScoringScriptEngineService(settings);
     }
+
+
 }

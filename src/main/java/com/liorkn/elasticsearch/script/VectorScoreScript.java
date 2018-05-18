@@ -25,6 +25,7 @@ import org.elasticsearch.script.ScriptException;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Map;
 
 /**
@@ -117,7 +118,6 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
         this.field = field.toString();
 
         // get query inputVector - convert to primitive
-
         final Object vector = params.get("vector");
         if(vector != null) {
             final ArrayList<Double> tmp = (ArrayList<Double>) vector;
@@ -145,7 +145,6 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
             magnitude = 0.0;
         }
     }
-
 
 
     /**
