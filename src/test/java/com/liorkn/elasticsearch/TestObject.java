@@ -9,12 +9,24 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class TestObject {
     int jobId;
-    String base64Vector;
+    String embeddingVector;
     double[] vector;
+
+    public int getJobId() {
+        return jobId;
+    }
+
+    public String getEmbeddingVector() {
+        return embeddingVector;
+    }
+
+    public double[] getVector() {
+        return vector;
+    }
 
     public TestObject(int jobId, double[] vector) {
         this.jobId = jobId;
         this.vector = vector;
-        this.base64Vector = Util.convertArrayToBase64(vector);
+        this.embeddingVector = Util.convertArrayToBase64(vector);
     }
 }
