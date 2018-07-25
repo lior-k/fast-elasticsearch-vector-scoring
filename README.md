@@ -35,11 +35,9 @@ give it a try.
    ```
 * Use this field mapping:
 ```
-    {
         "embedding_vector": {
         "type": "binary",
         "doc_values": true
-    }
 ```
 * The vector can be of any dimension
 
@@ -148,7 +146,10 @@ def encode_array(arr):
 
     Answer: this error happens when the plugin fails to access the field you specified in the `field` parameter in at least one of the documents.
 
-    To solve it: make sure that **all** the documents in your index contains the filed you specified in the `field` parameter.
+    To solve it: 
+        
+	* make sure that **all** the documents in your index contains the filed you specified in the `field` parameter.
 see more details [here](https://github.com/lior-k/fast-elasticsearch-vector-scoring/issues/6)
+    * make sure that the filed you specified in the `field` parameter has a `binary` type in the index mapping
 
 
