@@ -82,6 +82,19 @@ def encode_array(arr):
     return base64_str
 ```
 
+**Ruby**
+```
+require 'base64'
+
+def decode_float_list(base64_string)
+  Base64.strict_decode64(base64_string).unpack('G*')
+end
+
+def encode_array(arr)
+  Base64.strict_encode64(arr.pack('G*'))
+end
+```
+
 ### Querying
 * For querying the 100 KNN documents use this POST message on your ES index:
 
