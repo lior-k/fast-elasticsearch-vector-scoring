@@ -97,10 +97,11 @@ end
 
 **Go**
 ```
-"math"
-"encoding/binary"
-"encoding/base64"
-
+import(
+    "math"
+    "encoding/binary"
+    "encoding/base64"
+)
 bytes := Float64bytes(float64_array)
 encoded := base64.StdEncoding.EncodeToString(bytes)
 
