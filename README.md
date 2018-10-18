@@ -102,18 +102,35 @@ import(
     "encoding/binary"
     "encoding/base64"
 )
-bytes := Float64bytes(float64_array)
-encoded := base64.StdEncoding.EncodeToString(bytes)
 
-func Float64bytes(float []float64) []byte {
-	bytes := make([]byte, 0, 8*len(float))
-	for _, f := range float {
-		bits := math.Float64bits(f)
+func convertArrayToBase64(array []float64) string {
+	bytes := make([]byte, 0, 8*len(array))
+	for _, a := range array {
+		bits := math.Float64bits(a)
 		b := make([]byte, 8)
 		binary.BigEndian.PutUint64(b, bits)
 		bytes = append(bytes, b...)
 	}
-	return bytes
+
+	encoded := base64.StdEncoding.EncodeToString(bytes)
+	return encoded
+}
+
+func convertBase64ToArray(base64Str string) ([]float64, error) {
+	decoded, err := base64.StdEncoding.DecodeString(base64Str)
+	if err != nil {
+		return nil, err
+	}
+
+	length := len(decoded)
+	array := make([]float64, 0, length/8)
+
+	for i := 0; i < len(decoded); i += 8 {
+		bits := binary.BigEndian.Uint64(decoded[i : i+8])
+		f := math.Float64frombits(bits)
+		array = append(array, f)
+	}
+	return array, nil
 }
 ```
 
