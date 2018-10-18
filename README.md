@@ -95,6 +95,27 @@ def encode_array(arr)
 end
 ```
 
+**Go**
+```
+"math"
+"encoding/binary"
+"encoding/base64"
+
+bytes := Float64bytes(float64_array)
+encoded := base64.StdEncoding.EncodeToString(bytes)
+
+func Float64bytes(float []float64) []byte {
+	bytes := make([]byte, 0, 8*len(float))
+	for _, f := range float {
+		bits := math.Float64bits(f)
+		b := make([]byte, 8)
+		binary.BigEndian.PutUint64(b, bits)
+		bytes = append(bytes, b...)
+	}
+	return bytes
+}
+```
+
 ### Querying
 * For querying the 100 KNN documents use this POST message on your ES index:
 
