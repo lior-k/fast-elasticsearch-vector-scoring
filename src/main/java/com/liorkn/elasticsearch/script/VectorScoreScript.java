@@ -119,12 +119,20 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
 
         // get query inputVector - convert to primitive
         final Object vector = params.get("vector");
-        if(vector != null) {
-            final ArrayList<Double> tmp = (ArrayList<Double>) vector;
-            inputVector = new double[tmp.size()];
-            for (int i = 0; i < inputVector.length; i++) {
-                inputVector[i] = tmp.get(i);
-            }
+        if (vector != null) {
+	    final ArrayList<Object> tmp = (ArrayList<Object>) vector;
+	    inputVector = new double[tmp.size()];
+	    for (int i = 0; i < inputVector.length; i++) {
+		Object obj = tmp.get(i);
+		if (obj instanceof Double) {
+		    inputVector[i] = ((Double)obj).doubleValue();
+		} else if (obj instanceof Integer) {
+		    inputVector[i] = ((Integer)obj).doubleValue();
+		} else {
+		    throw new IllegalArgumentException("Cannot convert vector to double array");
+		}
+	    }
+	    
         } else {
             final Object encodedVector = params.get("encoded_vector");
             if(encodedVector == null) {
