@@ -10,7 +10,7 @@ import org.elasticsearch.index.reindex.ReindexPlugin;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.painless.PainlessPlugin;
-import org.elasticsearch.transport.Netty3Plugin;
+import org.elasticsearch.transport.Netty4Plugin;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,13 +41,10 @@ public class EmbeddedElasticsearchServer {
 
         Settings.Builder settings = Settings.builder()
                 .put("http.enabled", "true")
-                .put("transport.type", "local")
-                .put("http.type", "netty3")
+                .put("http.type", "netty4")
                 .put("path.data", dataDirectory)
                 .put("path.home", DEFAULT_HOME_DIRECTORY)
-                .put("script.inline", "on")
-                .put("node.max_local_storage_nodes", 10000)
-                .put("script.stored", "on");
+                .put("node.max_local_storage_nodes", 10000);
 
         startNodeInAvailablePort(settings);
     }
@@ -61,7 +58,7 @@ public class EmbeddedElasticsearchServer {
                 settings.put("http.port", String.valueOf(this.port));
 
                 // this a hack in order to load Groovy plug in since we want to enable the usage of scripts
-                node = new NodeExt(settings.build() , Arrays.asList(Netty3Plugin.class, PainlessPlugin.class, ReindexPlugin.class, VectorScoringPlugin.class));
+                node = new NodeExt(settings.build() , Arrays.asList(Netty4Plugin.class, PainlessPlugin.class, ReindexPlugin.class, VectorScoringPlugin.class));
                 node.start();
                 success = true;
                 System.out.println(EmbeddedElasticsearchServer.class.getName() + ": Using port: " + this.port);
