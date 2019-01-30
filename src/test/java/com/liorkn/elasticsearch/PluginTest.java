@@ -93,7 +93,7 @@ public class PluginTest {
                 "      \"boost_mode\": \"replace\"," +
                 "      \"script_score\": {" +
                 "        \"script\": {" +
-                "          \"inline\": \"binary_vector_score\"," +
+                "          \"source\": \"binary_vector_score\"," +
                 "          \"lang\": \"knn\"," +
                 "          \"params\": {" +
                 "            \"cosine\": true," +
