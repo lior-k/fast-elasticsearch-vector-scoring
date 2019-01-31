@@ -41,11 +41,11 @@ public final class VectorScoringPlugin extends Plugin implements ScriptPlugin {
 
 	@Override
     public ScriptEngine getScriptEngine(Settings settings, Collection<ScriptContext<?>> contexts) {
-        return new MyExpertScriptEngine();
+        return new VectorScoringPluginEngine();
     }
 
     /** This {@link ScriptEngine} uses Lucene segment details to implement document scoring based on their similarity with submitted document. */
-    private static class MyExpertScriptEngine implements ScriptEngine {
+    private static class VectorScoringPluginEngine implements ScriptEngine {
         @Override
         public String getType() {
             return "knn";
