@@ -42,28 +42,29 @@ give it a try.
 * The vector can be of any dimension
 
 ### Converting a vector to Base64
-to convert an array of doubles to a base64 string we use these example methods:
+to convert an array of float32 to a base64 string we use these example methods:
 
 **Java**
 ```
-public static final String convertArrayToBase64(double[] array) {
-	final int capacity = 8 * array.length;
-	final ByteBuffer bb = ByteBuffer.allocate(capacity);
-	for (int i = 0; i < array.length; i++) {
-		bb.putDouble(array[i]);
-	}
-	bb.rewind();
-	final ByteBuffer encodedBB = Base64.getEncoder().encode(bb);
-	return new String(encodedBB.array());
+public static float[] convertBase64ToArray(String base64Str) {
+    final byte[] decode = Base64.getDecoder().decode(base64Str.getBytes());
+    final FloatBuffer floatBuffer = ByteBuffer.wrap(decode).asFloatBuffer();
+    final float[] dims = new float[floatBuffer.capacity()];
+    floatBuffer.get(dims);
+
+    return dims;
 }
 
-public static double[] convertBase64ToArray(String base64Str) {
-	final byte[] decode = Base64.getDecoder().decode(base64Str.getBytes());
-	final DoubleBuffer doubleBuffer = ByteBuffer.wrap(decode).asDoubleBuffer();
+public static String convertArrayToBase64(float[] array) {
+    final int capacity = Float.BYTES * array.length;
+    final ByteBuffer bb = ByteBuffer.allocate(capacity);
+    for (float v : array) {
+        bb.putFloat(v);
+    }
+    bb.rewind();
+    final ByteBuffer encodedBB = Base64.getEncoder().encode(bb);
 
-	final double[] dims = new double[doubleBuffer.capacity()];
-	doubleBuffer.get(dims);
-	return dims;
+    return new String(encodedBB.array());
 }
 ```
 **Python**
@@ -71,14 +72,14 @@ public static double[] convertBase64ToArray(String base64Str) {
 import base64
 import numpy as np
 
-dbig = np.dtype('>f8')
+dfloat32 = np.dtype('>f4')
 
 def decode_float_list(base64_string):
     bytes = base64.b64decode(base64_string)
-    return np.frombuffer(bytes, dtype=dbig).tolist()
+    return np.frombuffer(bytes, dtype=dfloat32).tolist()
 
 def encode_array(arr):
-    base64_str = base64.b64encode(np.array(arr).astype(dbig)).decode("utf-8")
+    base64_str = base64.b64encode(np.array(arr).astype(dfloat32)).decode("utf-8")
     return base64_str
 ```
 
@@ -87,11 +88,11 @@ def encode_array(arr):
 require 'base64'
 
 def decode_float_list(base64_string)
-  Base64.strict_decode64(base64_string).unpack('G*')
+  Base64.strict_decode64(base64_string).unpack('g*')
 end
 
 def encode_array(arr)
-  Base64.strict_encode64(arr.pack('G*'))
+  Base64.strict_encode64(arr.pack('g*'))
 end
 ```
 
@@ -103,12 +104,12 @@ import(
     "encoding/base64"
 )
 
-func convertArrayToBase64(array []float64) string {
-	bytes := make([]byte, 0, 8*len(array))
+func convertArrayToBase64(array []float32) string {
+	bytes := make([]byte, 0, 4*len(array))
 	for _, a := range array {
-		bits := math.Float64bits(a)
-		b := make([]byte, 8)
-		binary.BigEndian.PutUint64(b, bits)
+		bits := math.Float32bits(a)
+		b := make([]byte, 4)
+		binary.BigEndian.PutUint32(b, bits)
 		bytes = append(bytes, b...)
 	}
 
@@ -116,18 +117,18 @@ func convertArrayToBase64(array []float64) string {
 	return encoded
 }
 
-func convertBase64ToArray(base64Str string) ([]float64, error) {
+func convertBase64ToArray(base64Str string) ([]float32, error) {
 	decoded, err := base64.StdEncoding.DecodeString(base64Str)
 	if err != nil {
 		return nil, err
 	}
 
 	length := len(decoded)
-	array := make([]float64, 0, length/8)
+	array := make([]float32, 0, length/4)
 
-	for i := 0; i < len(decoded); i += 8 {
-		bits := binary.BigEndian.Uint64(decoded[i : i+8])
-		f := math.Float64frombits(bits)
+	for i := 0; i < len(decoded); i += 4 {
+		bits := binary.BigEndian.Uint64(decoded[i : i+4])
+		f := math.Float32frombits(bits)
 		array = append(array, f)
 	}
 	return array, nil

@@ -8,8 +8,6 @@ storing arrays is no luck - lucine index doesn't keep the array members orders
 https://www.elastic.co/guide/en/elasticsearch/guide/current/complex-core-fields.html
 
 Delimited Payload Token Filter: https://www.elastic.co/guide/en/elasticsearch/reference/2.4/analysis-delimited-payload-tokenfilter.html
-
-
  */
 
 package com.liorkn.elasticsearch.script;
@@ -22,20 +20,14 @@ import org.elasticsearch.script.ExecutableScript;
 import org.elasticsearch.script.LeafSearchScript;
 import org.elasticsearch.script.ScriptException;
 
-import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Map;
+
 
 /**
  * Script that scores documents based on cosine similarity embedding vectors.
  */
 public final class VectorScoreScript implements LeafSearchScript, ExecutableScript {
-
-    public static final String SCRIPT_NAME = "binary_vector_score";
-
-    private static final int DOUBLE_SIZE = 8;
 
     // the field containing the vectors to be scored against
     public final String field;
@@ -43,21 +35,63 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
     private int docId;
     private BinaryDocValues binaryEmbeddingReader;
 
-    private final double[] inputVector;
-    private final double magnitude;
+    private final float[] inputVector;
+    private final float magnitude;
 
     private final boolean cosine;
 
     @Override
-    public long runAsLong() {
-        return ((Number)this.run()).longValue();
+    public final Object run() {
+        return runAsDouble();
     }
+
+    @Override
+    public long runAsLong() {
+        return (long) runAsDouble();
+    }
+
+    /**
+     * Called for each document
+     * @return cosine similarity of the current document against the input inputVector
+     */
     @Override
     public double runAsDouble() {
-        return ((Number)this.run()).doubleValue();
+        final byte[] bytes = binaryEmbeddingReader.get(docId).bytes;
+        final ByteArrayDataInput input = new ByteArrayDataInput(bytes);
+
+        // MUST appear hear since it affect the next calls
+        input.readVInt(); // returns the number of values which should be 1
+        input.readVInt(); // returns the number of bytes to read
+
+        float score = 0;
+
+        if(cosine) {
+            float docVectorNorm = 0.0f;
+
+            for (int i = 0; i < inputVector.length; i++) {
+                float v = Float.intBitsToFloat(input.readInt());
+                docVectorNorm += v * v;  // inputVector norm
+                score += v * inputVector[i];  // dot product
+            }
+
+            if (docVectorNorm == 0 || magnitude == 0) {
+                return 0f;
+            } else {
+                return score / (Math.sqrt(docVectorNorm) * magnitude);
+            }
+        } else {
+            for (int i = 0; i < inputVector.length; i++) {
+                float v = Float.intBitsToFloat(input.readInt());
+                score += v * inputVector[i];  // dot product
+            }
+
+            return score;
+        }
     }
+
     @Override
     public void setNextVar(String name, Object value) {}
+
     @Override
     public void setDocument(int docId) {
         this.docId = docId;
@@ -69,7 +103,6 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
         }
         this.binaryEmbeddingReader = binaryEmbeddingReader;
     }
-
 
     /**
      * Factory that is registered in
@@ -97,10 +130,8 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
         public boolean needsScores() {
             return false;
         }
-
     }
 
-    
     /**
      * Init
      * @param params index that a scored are placed in this parameter. Initialize them here.
@@ -121,9 +152,9 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
         final Object vector = params.get("vector");
         if(vector != null) {
             final ArrayList<Double> tmp = (ArrayList<Double>) vector;
-            inputVector = new double[tmp.size()];
+            inputVector = new float[tmp.size()];
             for (int i = 0; i < inputVector.length; i++) {
-                inputVector[i] = tmp.get(i);
+                inputVector[i] = tmp.get(i).floatValue();
             }
         } else {
             final Object encodedVector = params.get("encoded_vector");
@@ -135,59 +166,14 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
 
         if(cosine) {
             // calc magnitude
-            double queryVectorNorm = 0.0;
+            float queryVectorNorm = 0.0f;
             // compute query inputVector norm once
-            for (double v : inputVector) {
+            for (float v: inputVector) {
                 queryVectorNorm += v * v;
             }
-            magnitude =  Math.sqrt(queryVectorNorm);
+            magnitude = (float) Math.sqrt(queryVectorNorm);
         } else {
-            magnitude = 0.0;
+            magnitude = 0.0f;
         }
     }
-
-
-    /**
-     * Called for each document
-     * @return cosine similarity of the current document against the input inputVector
-     */
-    @Override
-    public final Object run() {
-        final int size = inputVector.length;
-
-        final byte[] bytes = binaryEmbeddingReader.get(docId).bytes;
-        final ByteArrayDataInput input = new ByteArrayDataInput(bytes);
-        input.readVInt(); // returns the number of values which should be 1, MUST appear hear since it affect the next calls
-        final int len = input.readVInt(); // returns the number of bytes to read
-        if(len != size * DOUBLE_SIZE) {
-            return 0.0;
-        }
-        final int position = input.getPosition();
-        final DoubleBuffer doubleBuffer = ByteBuffer.wrap(bytes, position, len).asDoubleBuffer();
-
-        final double[] docVector = new double[size];
-        doubleBuffer.get(docVector);
-
-        double docVectorNorm = 0.0f;
-        double score = 0;
-        for (int i = 0; i < size; i++) {
-            // doc inputVector norm
-            if(cosine) {
-                docVectorNorm += docVector[i]*docVector[i];
-            }
-            // dot product
-            score += docVector[i] * inputVector[i];
-        }
-        if(cosine) {
-            // cosine similarity score
-            if (docVectorNorm == 0 || magnitude == 0){
-                return 0f;
-            } else {
-                return score / (Math.sqrt(docVectorNorm) * magnitude);
-            }
-        } else {
-            return score;
-        }
-    }
-
 }
