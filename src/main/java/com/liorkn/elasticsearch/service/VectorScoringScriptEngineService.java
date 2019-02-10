@@ -33,7 +33,6 @@ public class VectorScoringScriptEngineService extends AbstractComponent implemen
         return new VectorScoreScript.Factory();
     }
 
-
     @Override
     public boolean isInlineScriptEnabled() {
         return true;
