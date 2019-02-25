@@ -1,7 +1,9 @@
 package com.liorkn.elasticsearch;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -70,7 +72,6 @@ public class PluginTest {
     public void test() throws Exception {
         final Map<String, String> params = new HashMap<>();
         params.put("refresh", "true");
-        final ObjectMapper mapper = new ObjectMapper();
         final TestObject[] objs = {new TestObject(1, new double[] {0.0, 0.5, 1.0}),
                 new TestObject(2, new double[] {0.2, 0.6, 0.99})};
 
@@ -95,7 +96,7 @@ public class PluginTest {
                 "          \"inline\": \"binary_vector_score\"," +
                 "          \"lang\": \"knn\"," +
                 "          \"params\": {" +
-                "            \"cosine\": false," +
+                "            \"cosine\": true," +
                 "            \"field\": \"embedding_vector\"," +
                 "            \"vector\": [" +
                 "               0.1, 0.2, 0.3" +
@@ -113,6 +114,10 @@ public class PluginTest {
         System.out.println(resBody);
         Assert.assertEquals("search should return status code 200", 200, res.getStatusLine().getStatusCode());
         Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":" + objs.length));
+        // Testing Scores
+        final ArrayNode hitsJson = (ArrayNode)mapper.readTree(resBody).get("hits").get("hits");
+        Assert.assertEquals(0.9941734, hitsJson.get(0).get("_score").asDouble(), 0);
+        Assert.assertEquals(0.95618284, hitsJson.get(1).get("_score").asDouble(), 0);
     }
 
     @AfterClass
