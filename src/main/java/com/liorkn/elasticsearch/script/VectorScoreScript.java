@@ -78,13 +78,6 @@ public final class VectorScoreScript extends SearchScript {
              throw new UncheckedIOException(e);
          }
     }
-
-    public void setBinaryEmbeddingReader(BinaryDocValues binaryEmbeddingReader) {
-        if(binaryEmbeddingReader == null) {
-            throw new IllegalStateException("binaryEmbeddingReader can't be null");
-        }
-        this.binaryEmbeddingReader = binaryEmbeddingReader;
-    }
     
     @SuppressWarnings("unchecked")
 	public VectorScoreScript(Map<String, Object> params, SearchLookup lookup, LeafReaderContext leafContext) {
