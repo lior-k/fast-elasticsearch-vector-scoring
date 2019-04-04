@@ -127,7 +127,7 @@ func convertBase64ToArray(base64Str string) ([]float32, error) {
 	array := make([]float32, 0, length/4)
 
 	for i := 0; i < len(decoded); i += 4 {
-		bits := binary.BigEndian.Uint64(decoded[i : i+4])
+		bits := binary.BigEndian.Uint32(decoded[i : i+4])
 		f := math.Float32frombits(bits)
 		array = append(array, f)
 	}
