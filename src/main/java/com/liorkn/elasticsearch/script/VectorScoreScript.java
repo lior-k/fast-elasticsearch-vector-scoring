@@ -8,12 +8,12 @@ import java.util.Map;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.store.ByteArrayDataInput;
-import org.elasticsearch.script.SearchScript;
+import org.elasticsearch.script.ScoreScript;
 import org.elasticsearch.search.lookup.SearchLookup;
 
 import com.liorkn.elasticsearch.Util;
 
-public final class VectorScoreScript extends SearchScript {
+public final class VectorScoreScript extends ScoreScript {
 
     private BinaryDocValues binaryEmbeddingReader;
     
@@ -22,14 +22,9 @@ public final class VectorScoreScript extends SearchScript {
 
     private final double[] inputVector;
     private final double magnitude;
-    
-    @Override
-    public long runAsLong() {
-        return (long) runAsDouble();
-    }
-    
+        
 	@Override
-	public double runAsDouble() {
+    public double execute() { 
 		try {
             final byte[] bytes = binaryEmbeddingReader.binaryValue().bytes;
             final ByteArrayDataInput input = new ByteArrayDataInput(bytes);
@@ -77,13 +72,6 @@ public final class VectorScoreScript extends SearchScript {
          } catch (IOException e) {
              throw new UncheckedIOException(e);
          }
-    }
-
-    public void setBinaryEmbeddingReader(BinaryDocValues binaryEmbeddingReader) {
-        if(binaryEmbeddingReader == null) {
-            throw new IllegalStateException("binaryEmbeddingReader can't be null");
-        }
-        this.binaryEmbeddingReader = binaryEmbeddingReader;
     }
     
     @SuppressWarnings("unchecked")
@@ -149,7 +137,7 @@ public final class VectorScoreScript extends SearchScript {
         }
 
 		@Override
-		public SearchScript newInstance(LeafReaderContext ctx) throws IOException {
+		public ScoreScript newInstance(LeafReaderContext ctx) throws IOException {
 			return new VectorScoreScript(this.params, this.lookup, ctx);
 		}
     }
