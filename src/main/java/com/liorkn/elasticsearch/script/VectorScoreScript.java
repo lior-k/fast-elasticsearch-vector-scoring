@@ -3,7 +3,6 @@ package com.liorkn.elasticsearch.script;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.lucene.index.BinaryDocValues;
