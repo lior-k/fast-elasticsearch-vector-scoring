@@ -5,8 +5,10 @@ import com.liorkn.elasticsearch.plugin.VectorScoringPlugin;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.env.Environment;
 import org.elasticsearch.http.BindHttpException;
 import org.elasticsearch.index.reindex.ReindexPlugin;
+import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.painless.PainlessPlugin;
@@ -16,6 +18,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
+
+import static java.util.Collections.emptyMap;
+
 
 public class EmbeddedElasticsearchServer {
     private static final Random RANDOM = new Random();
@@ -40,11 +45,11 @@ public class EmbeddedElasticsearchServer {
         this.port = port;
 
         Settings.Builder settings = Settings.builder()
-                .put("http.enabled", "true")
                 .put("http.type", "netty4")
                 .put("path.data", dataDirectory)
                 .put("path.home", DEFAULT_HOME_DIRECTORY)
-                .put("node.max_local_storage_nodes", 10000);
+                .put("node.max_local_storage_nodes", 10000)
+                .put("node.name", "test");
 
         startNodeInAvailablePort(settings);
     }
@@ -56,9 +61,11 @@ public class EmbeddedElasticsearchServer {
         while(!success) {
             try {
                 settings.put("http.port", String.valueOf(this.port));
-
+                
+                Settings envSettings = settings.build();
+                Environment env = InternalSettingsPreparer.prepareEnvironment(envSettings, emptyMap(), null, null);
                 // this a hack in order to load Groovy plug in since we want to enable the usage of scripts
-                node = new NodeExt(settings.build() , Arrays.asList(Netty4Plugin.class, PainlessPlugin.class, ReindexPlugin.class, VectorScoringPlugin.class));
+                node = new NodeExt(env, Arrays.asList(Netty4Plugin.class, PainlessPlugin.class, ReindexPlugin.class, VectorScoringPlugin.class));
                 node.start();
                 success = true;
                 System.out.println(EmbeddedElasticsearchServer.class.getName() + ": Using port: " + this.port);
