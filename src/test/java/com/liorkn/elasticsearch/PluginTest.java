@@ -1,21 +1,16 @@
 package com.liorkn.elasticsearch;
 
 import com.fasterxml.jackson.core.JsonParser;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.nio.entity.NStringEntity;
-import org.apache.http.util.EntityUtils;
-import org.elasticsearch.client.Response;
+import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,29 +29,30 @@ public class PluginTest {
 
         // delete test index if exists
         try {
-            esClient.performRequest("DELETE", "/test", Collections.emptyMap());
+        	Request deleteRequest = new Request("DELETE", "/test");
+            esClient.performRequest(deleteRequest);
         } catch (Exception e) {}
 
         // create test index
         String mappingJson = "{\n" +
                 "  \"mappings\": {\n" +
-                "    \"type\": {\n" +
-                "      \"properties\": {\n" +
-                "        \"embedding_vector\": {\n" +
-                "          \"doc_values\": true,\n" +
-                "          \"type\": \"binary\"\n" +
-                "        },\n" +
-                "        \"job_id\": {\n" +
-                "          \"type\": \"long\"\n" +
-                "        },\n" +
-                "        \"vector\": {\n" +
-                "          \"type\": \"float\"\n" +
-                "        }\n" +
+                "    \"properties\": {\n" +
+                "      \"embedding_vector\": {\n" +
+                "        \"doc_values\": true,\n" +
+                "        \"type\": \"binary\"\n" +
+                "      },\n" +
+                "      \"job_id\": {\n" +
+                "        \"type\": \"long\"\n" +
+                "      },\n" +
+                "      \"vector\": {\n" +
+                "        \"type\": \"float\"\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
                 "}";
-        esClient.performRequest("PUT", "/test", Collections.emptyMap(), new NStringEntity(mappingJson, ContentType.APPLICATION_JSON));
+        Request putRequest = new Request("PUT", "/test");
+        putRequest.setJsonEntity(mappingJson);
+        esClient.performRequest(putRequest);
     }
 
     public static final ObjectMapper mapper = new ObjectMapper();
@@ -68,8 +64,6 @@ public class PluginTest {
 
     @Test
     public void test() throws Exception {
-        final Map<String, String> params = new HashMap<>();
-        params.put("refresh", "true");
         final ObjectMapper mapper = new ObjectMapper();
         final TestObject[] objs = {new TestObject(1, new double[] {0.0, 0.5, 1.0}),
                 new TestObject(2, new double[] {0.2, 0.6, 0.99})};
@@ -78,7 +72,10 @@ public class PluginTest {
             final TestObject t = objs[i];
             final String json = mapper.writeValueAsString(t);
             System.out.println(json);
-            final Response put = esClient.performRequest("PUT", "/test/type/" + t.jobId, params, new StringEntity(json, ContentType.APPLICATION_JSON));
+            Request indexRequest = new Request("POST", "/test/_doc/" + t.jobId);
+            indexRequest.addParameter("refresh", "true");
+            indexRequest.setJsonEntity(json);
+            final Response put = esClient.performRequest(indexRequest);
             System.out.println(put);
             System.out.println(EntityUtils.toString(put.getEntity()));
             final int statusCode = put.getStatusLine().getStatusCode();
@@ -107,12 +104,14 @@ public class PluginTest {
                 "  }," +
                 "  \"size\": 100" +
                 "}";
-        final Response res = esClient.performRequest("POST", "/test/_search", Collections.emptyMap(), new NStringEntity(body, ContentType.APPLICATION_JSON));
+        Request searchRequest = new Request("POST", "/test/_search");
+        searchRequest.setJsonEntity(body);
+        final Response res = esClient.performRequest(searchRequest);
         System.out.println(res);
         final String resBody = EntityUtils.toString(res.getEntity());
         System.out.println(resBody);
         Assert.assertEquals("search should return status code 200", 200, res.getStatusLine().getStatusCode());
-        Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":" + objs.length));
+        Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":{\"value\":" + objs.length));
     }
 
     @AfterClass

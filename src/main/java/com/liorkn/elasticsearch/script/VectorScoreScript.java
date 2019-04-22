@@ -23,8 +23,7 @@ public final class VectorScoreScript extends ScoreScript {
     private final double[] inputVector;
     private final double magnitude;
         
-	@Override
-    public double execute() { 
+	public double execute() { 
 		try {
             final byte[] bytes = binaryEmbeddingReader.binaryValue().bytes;
             final ByteArrayDataInput input = new ByteArrayDataInput(bytes);
