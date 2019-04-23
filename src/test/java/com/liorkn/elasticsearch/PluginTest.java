@@ -72,6 +72,7 @@ public class PluginTest {
     public void test() throws Exception {
         final Map<String, String> params = new HashMap<>();
         params.put("refresh", "true");
+        final ObjectMapper mapper = new ObjectMapper();
         final TestObject[] objs = {new TestObject(1, new float[] {0.0f, 0.5f, 1.0f}),
                 new TestObject(2, new float[] {0.2f, 0.6f, 0.99f})};
 
