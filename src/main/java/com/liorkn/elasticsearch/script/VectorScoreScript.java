@@ -20,8 +20,8 @@ public final class VectorScoreScript extends ScoreScript {
 	private final String field;
     private final boolean cosine;
 
-    private final double[] inputVector;
-    private final double magnitude;
+    private final float[] inputVector;
+    private final float magnitude;
         
 	public double execute() { 
 		try {
@@ -39,9 +39,9 @@ public final class VectorScoreScript extends ScoreScript {
             float score = 0;
 
             if (cosine) {
-                double docVectorNorm = 0.0f;
+                float docVectorNorm = 0.0f;
                 for (int i = 0; i < inputVector.length; i++) {
-                    double v = Double.longBitsToDouble(input.readLong());
+                    float v = Float.intBitsToFloat(input.readInt());
                     docVectorNorm += v * v;  // inputVector norm
                     score += v * inputVector[i];  // dot product
                 }
@@ -53,7 +53,7 @@ public final class VectorScoreScript extends ScoreScript {
                 }
             } else {
                 for (int i = 0; i < inputVector.length; i++) {
-                    double v = Double.longBitsToDouble(input.readLong());
+                    float v = Float.intBitsToFloat(input.readInt());
                     score += v * inputVector[i];  // dot product
                 }
 
@@ -91,9 +91,9 @@ public final class VectorScoreScript extends ScoreScript {
         final Object vector = params.get("vector");
         if(vector != null) {
             final ArrayList<Double> tmp = (ArrayList<Double>) vector;
-            inputVector = new double[tmp.size()];
+            inputVector = new float[tmp.size()];
             for (int i = 0; i < inputVector.length; i++) {
-                inputVector[i] = tmp.get(i).doubleValue();
+                inputVector[i] = tmp.get(i).floatValue();
             }
         } else {
             final Object encodedVector = params.get("encoded_vector");
@@ -105,12 +105,12 @@ public final class VectorScoreScript extends ScoreScript {
 
         if (this.cosine) {
             // calc magnitude
-            double queryVectorNorm = 0.0f;
+            float queryVectorNorm = 0.0f;
             // compute query inputVector norm once
-            for (double v: this.inputVector) {
+            for (float v: this.inputVector) {
                 queryVectorNorm += v * v;
             }
-            this.magnitude = (double) Math.sqrt(queryVectorNorm);
+            this.magnitude = (float) Math.sqrt(queryVectorNorm);
         } else {
             this.magnitude = 0.0f;
         }
