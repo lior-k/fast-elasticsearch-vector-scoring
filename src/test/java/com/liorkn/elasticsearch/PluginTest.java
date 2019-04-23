@@ -71,8 +71,8 @@ public class PluginTest {
         final Map<String, String> params = new HashMap<>();
         params.put("refresh", "true");
         final ObjectMapper mapper = new ObjectMapper();
-        final TestObject[] objs = {new TestObject(1, new double[] {0.0, 0.5, 1.0}),
-                new TestObject(2, new double[] {0.2, 0.6, 0.99})};
+        final TestObject[] objs = {new TestObject(1, new float[] {0.0f, 0.5f, 1.0f}),
+                new TestObject(2, new float[] {0.2f, 0.6f, 0.99f})};
 
         for (int i = 0; i < objs.length; i++) {
             final TestObject t = objs[i];
