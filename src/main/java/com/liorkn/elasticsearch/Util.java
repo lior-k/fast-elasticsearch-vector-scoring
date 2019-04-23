@@ -18,7 +18,7 @@ public class Util {
         return dims;
     }
 
-    public static String convertArrayToBase64(double[] array) {
+    public static String convertArrayToBase64(float[] array) {
         final int capacity = Float.BYTES * array.length;
         final ByteBuffer bb = ByteBuffer.allocate(capacity);
         for (double v : array) {

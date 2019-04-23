@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 public class TestObject {
     int jobId;
     String embeddingVector;
-    double[] vector;
+    float[] vector;
 
     public int getJobId() {
         return jobId;
@@ -20,11 +20,11 @@ public class TestObject {
         return embeddingVector;
     }
 
-    public double[] getVector() {
+    public float[] getVector() {
         return vector;
     }
 
-    public TestObject(int jobId, double[] vector) {
+    public TestObject(int jobId, float[] vector) {
         this.jobId = jobId;
         this.vector = vector;
         this.embeddingVector = Util.convertArrayToBase64(vector);
