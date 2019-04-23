@@ -1,7 +1,6 @@
 package com.liorkn.elasticsearch;
 
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.node.InternalSettingsPreparer;
+import org.elasticsearch.env.Environment;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.plugins.Plugin;
 
@@ -12,9 +11,8 @@ import java.util.Collection;
  */
 public class NodeExt extends Node {
 
-    public NodeExt(Settings preparedSettings, Collection<Class<? extends Plugin>> classpathPlugins) {
-        super(InternalSettingsPreparer.prepareEnvironment(preparedSettings, null),
-                classpathPlugins);
+    public NodeExt(Environment env, Collection<Class<? extends Plugin>> classpathPlugins) {
+        super(env, classpathPlugins, false);
     }
 
 }
