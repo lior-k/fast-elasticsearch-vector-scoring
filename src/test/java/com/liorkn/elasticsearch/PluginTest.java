@@ -1,9 +1,9 @@
 package com.liorkn.elasticsearch;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -93,7 +93,7 @@ public class PluginTest {
                 "      \"boost_mode\": \"replace\"," +
                 "      \"script_score\": {" +
                 "        \"script\": {" +
-                "          \"inline\": \"binary_vector_score\"," +
+                "          \"source\": \"binary_vector_score\"," +
                 "          \"lang\": \"knn\"," +
                 "          \"params\": {" +
                 "            \"cosine\": true," +
