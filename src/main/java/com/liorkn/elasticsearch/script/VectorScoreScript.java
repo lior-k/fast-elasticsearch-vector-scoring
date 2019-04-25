@@ -38,7 +38,7 @@ public final class VectorScoreScript extends SearchScript {
             
             final int len = input.readVInt();
             // in case vector is of different size
-            if (len != inputVector.length * Double.BYTES) {
+            if (len != inputVector.length * Float.BYTES) {
                 return 0.0;
             }
             
