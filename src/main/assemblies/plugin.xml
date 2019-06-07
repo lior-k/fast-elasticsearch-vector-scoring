@@ -4,7 +4,7 @@
     <formats>
         <format>zip</format>
     </formats>
-    <includeBaseDirectory>true</includeBaseDirectory>
+    <includeBaseDirectory>false</includeBaseDirectory>
     <baseDirectory>elasticsearch</baseDirectory>
     <dependencySets>
         <dependencySet>
