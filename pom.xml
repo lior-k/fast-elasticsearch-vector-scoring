@@ -7,7 +7,7 @@
     <name>elasticsearch-binary-vector-scoring</name>
     <groupId>com.liorkn.elasticsearch</groupId>
     <artifactId>elasticsearch-binary-vector-scoring</artifactId>
-    <version>5.6.0</version>
+    <version>7.1.0</version>
     <description>ElasticSearch Plugin for Binary Vector Scoring</description>
     
     <licenses>
@@ -27,7 +27,7 @@
         <elasticsearch.license.headerDefinition>${project.basedir}/src/main/resources/license-check/license_header_definition.xml</elasticsearch.license.headerDefinition>
 
         <tests.ifNoTests>warn</tests.ifNoTests>
-		<elasticsearch.version>5.6.0</elasticsearch.version>
+		<elasticsearch.version>7.1.0</elasticsearch.version>
         <commons-io.version>2.4</commons-io.version>
         <httpcore.version>4.4.8</httpcore.version>
         <junit.version>4.12</junit.version>
@@ -39,13 +39,13 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.7</version>
+            <version>2.11.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.7</version>
+            <version>2.11.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -65,7 +65,7 @@
 
         <dependency>
             <groupId>org.elasticsearch.plugin</groupId>
-            <artifactId>transport-netty3-client</artifactId>
+            <artifactId>transport-netty4-client</artifactId>
             <version>${elasticsearch.version}</version>
             <scope>test</scope>
         </dependency>
@@ -86,12 +86,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.elasticsearch.plugin</groupId>-->
-            <!--<artifactId>transport-netty3-client</artifactId>-->
-            <!--<version>${elasticsearch.version}</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>lang-painless</artifactId>
@@ -114,7 +108,6 @@
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-client</artifactId>
             <version>${elasticsearch.version}</version>
-            <!--<version>5.6.8</version>-->
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
