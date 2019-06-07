@@ -1,145 +1,85 @@
-/*
-Based on: https://discuss.elastic.co/t/vector-scoring/85227/4
-and https://github.com/MLnick/elasticsearch-vector-scoring
-
-another slower implementation using strings: https://github.com/ginobefun/elasticsearch-feature-vector-scoring
-
-storing arrays is no luck - lucine index doesn't keep the array members orders
-https://www.elastic.co/guide/en/elasticsearch/guide/current/complex-core-fields.html
-
-Delimited Payload Token Filter: https://www.elastic.co/guide/en/elasticsearch/reference/2.4/analysis-delimited-payload-tokenfilter.html
- */
-
 package com.liorkn.elasticsearch.script;
 
-import com.liorkn.elasticsearch.Util;
-import org.apache.lucene.index.BinaryDocValues;
-import org.apache.lucene.store.ByteArrayDataInput;
-import org.elasticsearch.common.Nullable;
-import org.elasticsearch.script.ExecutableScript;
-import org.elasticsearch.script.LeafSearchScript;
-import org.elasticsearch.script.ScriptException;
-
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.apache.lucene.index.BinaryDocValues;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.store.ByteArrayDataInput;
+import org.elasticsearch.script.ScoreScript;
+import org.elasticsearch.search.lookup.SearchLookup;
 
-/**
- * Script that scores documents based on cosine similarity embedding vectors.
- */
-public final class VectorScoreScript implements LeafSearchScript, ExecutableScript {
+import com.liorkn.elasticsearch.Util;
 
-    // the field containing the vectors to be scored against
-    public final String field;
+public final class VectorScoreScript extends ScoreScript {
 
-    private int docId;
     private BinaryDocValues binaryEmbeddingReader;
+    
+	private final String field;
+    private final boolean cosine;
 
     private final float[] inputVector;
     private final float magnitude;
 
-    private final boolean cosine;
-
     @Override
-    public final Object run() {
-        return runAsDouble();
-    }
-
-    @Override
-    public long runAsLong() {
-        return (long) runAsDouble();
-    }
-
-    /**
-     * Called for each document
-     * @return cosine similarity of the current document against the input inputVector
-     */
-    @Override
-    public double runAsDouble() {
-        final byte[] bytes = binaryEmbeddingReader.get(docId).bytes;
-        final ByteArrayDataInput input = new ByteArrayDataInput(bytes);
-
-        // MUST appear hear since it affect the next calls
-        input.readVInt(); // returns the number of values which should be 1
-        input.readVInt(); // returns the number of bytes to read
-
-        float score = 0;
-
-        if(cosine) {
-            float docVectorNorm = 0.0f;
-
-            for (int i = 0; i < inputVector.length; i++) {
-                float v = Float.intBitsToFloat(input.readInt());
-                docVectorNorm += v * v;  // inputVector norm
-                score += v * inputVector[i];  // dot product
+    public double execute() { 
+	try {
+            final byte[] bytes = binaryEmbeddingReader.binaryValue().bytes;
+            final ByteArrayDataInput input = new ByteArrayDataInput(bytes);
+            
+            input.readVInt(); // returns the number of values which should be 1, MUST appear hear since it affect the next calls
+            
+            final int len = input.readVInt();
+            // in case vector is of different size
+            if (len != inputVector.length * Float.BYTES) {
+                return 0.0;
             }
+            
+            float score = 0;
 
-            if (docVectorNorm == 0 || magnitude == 0) {
-                return 0f;
+            if (cosine) {
+            	float docVectorNorm = 0.0f;
+                for (int i = 0; i < inputVector.length; i++) {
+                	float v = Float.intBitsToFloat(input.readInt());
+                    docVectorNorm += v * v;  // inputVector norm
+                    score += v * inputVector[i];  // dot product
+                }
+
+                if (docVectorNorm == 0 || magnitude == 0) {
+                    return 0f;
+                } else {
+                    return (1.0f + score / (Math.sqrt(docVectorNorm) * magnitude)) / 2.0f;
+                }
             } else {
-                return score / (Math.sqrt(docVectorNorm) * magnitude);
-            }
-        } else {
-            for (int i = 0; i < inputVector.length; i++) {
-                float v = Float.intBitsToFloat(input.readInt());
-                score += v * inputVector[i];  // dot product
-            }
+                for (int i = 0; i < inputVector.length; i++) {
+                	float v = Float.intBitsToFloat(input.readInt());
+                    score += v * inputVector[i];  // dot product
+                }
 
-            return score;
+                return score;
+            }
+    	} catch (Exception e) {
+    		return 0.0;
         }
-    }
-
-    @Override
-    public void setNextVar(String name, Object value) {}
-
-    @Override
+	}
+    
+	@Override
     public void setDocument(int docId) {
-        this.docId = docId;
+		 try {
+         	this.binaryEmbeddingReader.advanceExact(docId);
+         } catch (IOException e) {
+             throw new UncheckedIOException(e);
+         }
     }
-
-    public void setBinaryEmbeddingReader(BinaryDocValues binaryEmbeddingReader) {
-        if(binaryEmbeddingReader == null) {
-            throw new IllegalStateException("binaryEmbeddingReader can't be null");
-        }
-        this.binaryEmbeddingReader = binaryEmbeddingReader;
-    }
-
-    /**
-     * Factory that is registered in
-     * {@link VectorScoringPlugin#onModule(org.elasticsearch.script.ScriptModule)}
-     * method when the plugin is loaded.
-     */
-    public static class Factory {
-
-        /**
-         * This method is called for every search on every shard.
-         * 
-         * @param params
-         *            list of script parameters passed with the query
-         * @return new native script
-         */
-        public ExecutableScript newScript(@Nullable Map<String, Object> params) throws ScriptException {
-            return new VectorScoreScript(params);
-        }
-
-        /**
-         * Indicates if document scores may be needed by the produced scripts.
-         *
-         * @return {@code true} if scores are needed.
-         */
-        public boolean needsScores() {
-            return false;
-        }
-    }
-
-    /**
-     * Init
-     * @param params index that a scored are placed in this parameter. Initialize them here.
-     */
+    
     @SuppressWarnings("unchecked")
-    public VectorScoreScript(Map<String, Object> params) {
-        final Object cosineBool = params.get("cosine");
-        cosine = cosineBool != null ?
+	public VectorScoreScript(Map<String, Object> params, SearchLookup lookup, LeafReaderContext leafContext) {
+		super(params, lookup, leafContext);
+		
+		final Object cosineBool = params.get("cosine");
+        this.cosine = cosineBool != null ?
                 (boolean)cosineBool :
                 true;
 
@@ -164,16 +104,41 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
             inputVector = Util.convertBase64ToArray((String) encodedVector);
         }
 
-        if(cosine) {
+        if (this.cosine) {
             // calc magnitude
             float queryVectorNorm = 0.0f;
             // compute query inputVector norm once
-            for (float v: inputVector) {
+            for (float v: this.inputVector) {
                 queryVectorNorm += v * v;
             }
-            magnitude = (float) Math.sqrt(queryVectorNorm);
+            this.magnitude = (float) Math.sqrt(queryVectorNorm);
         } else {
-            magnitude = 0.0f;
+            this.magnitude = 0.0f;
         }
+        
+        try {
+			this.binaryEmbeddingReader = leafContext.reader().getBinaryDocValues(this.field);
+		} catch (IOException e) {
+			throw new IllegalStateException("binaryEmbeddingReader can't be null");
+		}
+	}
+	
+	public static class VectorScoreScriptFactory implements LeafFactory {
+		private final Map<String, Object> params;
+        private final SearchLookup lookup;
+        
+        public VectorScoreScriptFactory(Map<String, Object> params, SearchLookup lookup) {
+            this.params = params;
+            this.lookup = lookup;
+        }
+		
+        public boolean needs_score() {
+            return false;
+        }
+
+		@Override
+		public ScoreScript newInstance(LeafReaderContext ctx) throws IOException {
+			return new VectorScoreScript(this.params, this.lookup, ctx);
+		}
     }
 }
