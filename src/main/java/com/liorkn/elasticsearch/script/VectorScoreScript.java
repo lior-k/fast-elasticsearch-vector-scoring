@@ -42,23 +42,23 @@ public final class VectorScoreScript extends ScoreScript {
             if (cosine) {
             	float docVectorNorm = 0.0f;
                 for (int i = 0; i < inputVector.length; i++) {
-                	float v = Float.intBitsToFloat(input.readInt());
+               	    float v = Float.intBitsToFloat(input.readInt());
                     docVectorNorm += v * v;  // inputVector norm
                     score += v * inputVector[i];  // dot product
                 }
 
                 if (docVectorNorm == 0 || magnitude == 0) {
                     return 0f;
-                } else {
+                } else { // Convert cosine similarity range from (-1 to 1) to (0 to 1)
                     return (1.0f + score / (Math.sqrt(docVectorNorm) * magnitude)) / 2.0f;
                 }
             } else {
                 for (int i = 0; i < inputVector.length; i++) {
-                	float v = Float.intBitsToFloat(input.readInt());
+                    float v = Float.intBitsToFloat(input.readInt());
                     score += v * inputVector[i];  // dot product
                 }
 
-                return score;
+                return Math.exp(score); // Convert dot-proudct range from (-INF to +INF) to (0 to +INF)
             }
     	} catch (Exception e) {
     		return 0.0;
