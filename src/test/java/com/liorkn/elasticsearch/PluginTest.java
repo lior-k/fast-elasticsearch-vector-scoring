@@ -1,7 +1,7 @@
 package com.liorkn.elasticsearch;
 
 import com.fasterxml.jackson.core.JsonParser;
-
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.apache.http.util.EntityUtils;
@@ -93,7 +93,7 @@ public class PluginTest {
                 "          \"source\": \"binary_vector_score\"," +
                 "          \"lang\": \"knn\"," +
                 "          \"params\": {" +
-                "            \"cosine\": false," +
+                "            \"cosine\": true," +
                 "            \"field\": \"embedding_vector\"," +
                 "            \"vector\": [" +
                 "               0.1, 0.2, 0.3" +
@@ -107,12 +107,50 @@ public class PluginTest {
                 "}";
         Request searchRequest = new Request("POST", "/test/_search");
         searchRequest.setJsonEntity(body);
-        final Response res = esClient.performRequest(searchRequest);
+        Response res = esClient.performRequest(searchRequest);
         System.out.println(res);
-        final String resBody = EntityUtils.toString(res.getEntity());
+        String resBody = EntityUtils.toString(res.getEntity());
         System.out.println(resBody);
         Assert.assertEquals("search should return status code 200", 200, res.getStatusLine().getStatusCode());
         Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":{\"value\":" + objs.length));
+	// Testing Scores
+        ArrayNode hitsJson = (ArrayNode)mapper.readTree(resBody).get("hits").get("hits");
+        Assert.assertEquals(0.9970867, hitsJson.get(0).get("_score").asDouble(), 0);
+        Assert.assertEquals(0.9780914, hitsJson.get(1).get("_score").asDouble(), 0);
+
+	// Test dot-product score function
+        body = "{" +
+                "  \"query\": {" +
+                "    \"function_score\": {" +
+                "      \"boost_mode\": \"replace\"," +
+                "      \"script_score\": {" +
+                "        \"script\": {" +
+                "          \"source\": \"binary_vector_score\"," +
+                "          \"lang\": \"knn\"," +
+                "          \"params\": {" +
+                "            \"cosine\": false," +
+                "            \"field\": \"embedding_vector\"," +
+                "            \"vector\": [" +
+                "               0.1, 0.2, 0.3" +
+                "             ]" +
+                "          }" +
+                "        }" +
+                "      }" +
+                "    }" +
+                "  }," +
+                "  \"size\": 100" +
+                "}";
+        searchRequest.setJsonEntity(body);
+        res = esClient.performRequest(searchRequest);
+        System.out.println(res);
+        resBody = EntityUtils.toString(res.getEntity());
+        System.out.println(resBody);
+        Assert.assertEquals("search should return status code 200", 200, res.getStatusLine().getStatusCode());
+        Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":{\"value\":" + objs.length));
+        // Testing Scores
+        hitsJson = (ArrayNode)mapper.readTree(resBody).get("hits").get("hits");
+        Assert.assertEquals(1.5480561, hitsJson.get(0).get("_score").asDouble(), 0);
+        Assert.assertEquals(1.4918247, hitsJson.get(1).get("_score").asDouble(), 0);
     }
 
     @AfterClass
