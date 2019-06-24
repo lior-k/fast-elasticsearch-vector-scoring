@@ -11,6 +11,7 @@ give it a try.
 
 ## Elasticsearch version
 * Currently designed for Elasticsearch 5.6.0.
+* for Elasticsearch 7.1.0 use branch `es-7.1.0`
 * for Elasticsearch 5.2.2 use branch `es-5.2.2`
 * for Elasticsearch 2.4.4 use branch `es-2.4.4`
 
@@ -139,7 +140,7 @@ func convertBase64ToArray(base64Str string) ([]float32, error) {
 * For querying the 100 KNN documents use this POST message on your ES index:
 
 
-    For ES 5.X:
+    For ES 5.X and ES 7.1:
 ```
 {
   "query": {
@@ -147,7 +148,7 @@ func convertBase64ToArray(base64Str string) ([]float32, error) {
       "boost_mode": "replace",
       "script_score": {
         "script": {
-          "inline": "binary_vector_score",
+	      "source": "binary_vector_score",
           "lang": "knn",
           "params": {
             "cosine": false,
@@ -194,6 +195,14 @@ func convertBase64ToArray(base64Str string) ([]float32, error) {
    2. `cosine`: Boolean. if true - use cosine-similarity, else use dot-product.
    3. `vector`: The vector (comma separated) to compare to.
  
+* Note **for ElasticSearch 7 only**:
+   Because scores produced by the script_score function must be non-negative on elasticsearch 7, I convert dot product score and cosine similarity score by using these simple equations:
+    (changed dot product) = e^(original dot product)
+    (changed cosine similarity) = ((original cosine similarity) + 1) / 2
+
+    So you can use these simple equation to convert them to original score.
+    (original dot product) = ln(changed dot product)
+    (original cosine similarity) = (changed cosine similarity) * 2 - 1
 
 * Question: I've encountered the error `java.lang.IllegalStateException: binaryEmbeddingReader can't be null` while running the query. what should I do?
 
@@ -204,5 +213,4 @@ func convertBase64ToArray(base64Str string) ([]float32, error) {
 	* make sure that **all** the documents in your index contains the filed you specified in the `field` parameter.
 see more details [here](https://github.com/lior-k/fast-elasticsearch-vector-scoring/issues/6)
     * make sure that the filed you specified in the `field` parameter has a `binary` type in the index mapping
-
 
