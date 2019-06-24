@@ -13,13 +13,15 @@
  */
 package com.liorkn.elasticsearch.plugin;
 
-import com.liorkn.elasticsearch.service.VectorScoringScriptEngineService;
+import com.liorkn.elasticsearch.engine.VectorScoringScriptEngine;
+
+import java.util.Collection;
 
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.plugins.ScriptPlugin;
-import org.elasticsearch.script.ScriptEngineService;
-
+import org.elasticsearch.script.ScriptContext;
+import org.elasticsearch.script.ScriptEngine;
 /**
  * This class is instantiated when Elasticsearch loads the plugin for the
  * first time. If you change the name of this plugin, make sure to update
@@ -27,9 +29,8 @@ import org.elasticsearch.script.ScriptEngineService;
  */
 public final class VectorScoringPlugin extends Plugin implements ScriptPlugin {
 
-    public final ScriptEngineService getScriptEngineService(Settings settings) {
-        return new VectorScoringScriptEngineService(settings);
+	@Override
+    public ScriptEngine getScriptEngine(Settings settings, Collection<ScriptContext<?>> contexts) {
+        return new VectorScoringScriptEngine();
     }
-
-
 }

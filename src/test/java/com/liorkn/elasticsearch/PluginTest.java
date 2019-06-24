@@ -1,25 +1,19 @@
 package com.liorkn.elasticsearch;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.nio.entity.NStringEntity;
 import org.apache.http.util.EntityUtils;
-import org.elasticsearch.client.Response;
+import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.Response;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Lior Knaany on 4/7/18.
@@ -36,29 +30,30 @@ public class PluginTest {
 
         // delete test index if exists
         try {
-            esClient.performRequest("DELETE", "/test", Collections.emptyMap());
+        	Request deleteRequest = new Request("DELETE", "/test");
+            esClient.performRequest(deleteRequest);
         } catch (Exception e) {}
 
         // create test index
         String mappingJson = "{\n" +
                 "  \"mappings\": {\n" +
-                "    \"type\": {\n" +
-                "      \"properties\": {\n" +
-                "        \"embedding_vector\": {\n" +
-                "          \"doc_values\": true,\n" +
-                "          \"type\": \"binary\"\n" +
-                "        },\n" +
-                "        \"job_id\": {\n" +
-                "          \"type\": \"long\"\n" +
-                "        },\n" +
-                "        \"vector\": {\n" +
-                "          \"type\": \"float\"\n" +
-                "        }\n" +
+                "    \"properties\": {\n" +
+                "      \"embedding_vector\": {\n" +
+                "        \"doc_values\": true,\n" +
+                "        \"type\": \"binary\"\n" +
+                "      },\n" +
+                "      \"job_id\": {\n" +
+                "        \"type\": \"long\"\n" +
+                "      },\n" +
+                "      \"vector\": {\n" +
+                "        \"type\": \"float\"\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
                 "}";
-        esClient.performRequest("PUT", "/test", Collections.emptyMap(), new NStringEntity(mappingJson, ContentType.APPLICATION_JSON));
+        Request putRequest = new Request("PUT", "/test");
+        putRequest.setJsonEntity(mappingJson);
+        esClient.performRequest(putRequest);
     }
 
     public static final ObjectMapper mapper = new ObjectMapper();
@@ -70,8 +65,7 @@ public class PluginTest {
 
     @Test
     public void test() throws Exception {
-        final Map<String, String> params = new HashMap<>();
-        params.put("refresh", "true");
+        final ObjectMapper mapper = new ObjectMapper();
         final TestObject[] objs = {new TestObject(1, new float[] {0.0f, 0.5f, 1.0f}),
                 new TestObject(2, new float[] {0.2f, 0.6f, 0.99f})};
 
@@ -79,7 +73,10 @@ public class PluginTest {
             final TestObject t = objs[i];
             final String json = mapper.writeValueAsString(t);
             System.out.println(json);
-            final Response put = esClient.performRequest("PUT", "/test/type/" + t.jobId, params, new StringEntity(json, ContentType.APPLICATION_JSON));
+            Request indexRequest = new Request("POST", "/test/_doc/" + t.jobId);
+            indexRequest.addParameter("refresh", "true");
+            indexRequest.setJsonEntity(json);
+            final Response put = esClient.performRequest(indexRequest);
             System.out.println(put);
             System.out.println(EntityUtils.toString(put.getEntity()));
             final int statusCode = put.getStatusLine().getStatusCode();
@@ -93,7 +90,7 @@ public class PluginTest {
                 "      \"boost_mode\": \"replace\"," +
                 "      \"script_score\": {" +
                 "        \"script\": {" +
-                "          \"inline\": \"binary_vector_score\"," +
+                "          \"source\": \"binary_vector_score\"," +
                 "          \"lang\": \"knn\"," +
                 "          \"params\": {" +
                 "            \"cosine\": true," +
@@ -108,16 +105,52 @@ public class PluginTest {
                 "  }," +
                 "  \"size\": 100" +
                 "}";
-        final Response res = esClient.performRequest("POST", "/test/_search", Collections.emptyMap(), new NStringEntity(body, ContentType.APPLICATION_JSON));
+        Request searchRequest = new Request("POST", "/test/_search");
+        searchRequest.setJsonEntity(body);
+        Response res = esClient.performRequest(searchRequest);
         System.out.println(res);
-        final String resBody = EntityUtils.toString(res.getEntity());
+        String resBody = EntityUtils.toString(res.getEntity());
         System.out.println(resBody);
         Assert.assertEquals("search should return status code 200", 200, res.getStatusLine().getStatusCode());
-        Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":" + objs.length));
+        Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":{\"value\":" + objs.length));
+	// Testing Scores
+        ArrayNode hitsJson = (ArrayNode)mapper.readTree(resBody).get("hits").get("hits");
+        Assert.assertEquals(0.9970867, hitsJson.get(0).get("_score").asDouble(), 0);
+        Assert.assertEquals(0.9780914, hitsJson.get(1).get("_score").asDouble(), 0);
+
+	// Test dot-product score function
+        body = "{" +
+                "  \"query\": {" +
+                "    \"function_score\": {" +
+                "      \"boost_mode\": \"replace\"," +
+                "      \"script_score\": {" +
+                "        \"script\": {" +
+                "          \"source\": \"binary_vector_score\"," +
+                "          \"lang\": \"knn\"," +
+                "          \"params\": {" +
+                "            \"cosine\": false," +
+                "            \"field\": \"embedding_vector\"," +
+                "            \"vector\": [" +
+                "               0.1, 0.2, 0.3" +
+                "             ]" +
+                "          }" +
+                "        }" +
+                "      }" +
+                "    }" +
+                "  }," +
+                "  \"size\": 100" +
+                "}";
+        searchRequest.setJsonEntity(body);
+        res = esClient.performRequest(searchRequest);
+        System.out.println(res);
+        resBody = EntityUtils.toString(res.getEntity());
+        System.out.println(resBody);
+        Assert.assertEquals("search should return status code 200", 200, res.getStatusLine().getStatusCode());
+        Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":{\"value\":" + objs.length));
         // Testing Scores
-        final ArrayNode hitsJson = (ArrayNode)mapper.readTree(resBody).get("hits").get("hits");
-        Assert.assertEquals(0.9941734, hitsJson.get(0).get("_score").asDouble(), 0);
-        Assert.assertEquals(0.95618284, hitsJson.get(1).get("_score").asDouble(), 0);
+        hitsJson = (ArrayNode)mapper.readTree(resBody).get("hits").get("hits");
+        Assert.assertEquals(1.5480561, hitsJson.get(0).get("_score").asDouble(), 0);
+        Assert.assertEquals(1.4918247, hitsJson.get(1).get("_score").asDouble(), 0);
     }
 
     @AfterClass
