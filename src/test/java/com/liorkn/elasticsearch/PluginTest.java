@@ -116,8 +116,8 @@ public class PluginTest {
         Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":" + objs.length));
         // Testing Scores
         final ArrayNode hitsJson = (ArrayNode)mapper.readTree(resBody).get("hits").get("hits");
-        Assert.assertEquals(0.9941734, hitsJson.get(0).get("_score").asDouble(), 0);
-        Assert.assertEquals(0.95618284, hitsJson.get(1).get("_score").asDouble(), 0);
+        Assert.assertEquals(0.9970867, hitsJson.get(0).get("_score").asDouble(), 0);
+        Assert.assertEquals(0.9780914, hitsJson.get(1).get("_score").asDouble(), 0);
     }
 
     @AfterClass

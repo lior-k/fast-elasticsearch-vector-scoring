@@ -56,6 +56,10 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
      */
     @Override
     public double runAsDouble() {
+        if (binaryEmbeddingReader == null) {
+            return 0f;
+        }
+
         final byte[] bytes = binaryEmbeddingReader.get(docId).bytes;
         final ByteArrayDataInput input = new ByteArrayDataInput(bytes);
 
@@ -76,16 +80,15 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
 
             if (docVectorNorm == 0 || magnitude == 0) {
                 return 0f;
-            } else {
-                return score / (Math.sqrt(docVectorNorm) * magnitude);
+            } else { // Convert cosine similarity range from (-1 to 1) to (0 to 1)
+                return (1.0f + score / (Math.sqrt(docVectorNorm) * magnitude)) / 2.0f;
             }
         } else {
             for (int i = 0; i < inputVector.length; i++) {
                 float v = Float.intBitsToFloat(input.readInt());
                 score += v * inputVector[i];  // dot product
             }
-
-            return score;
+            return Math.exp(score); // Convert dot-proudct range from (-INF to +INF) to (0 to +INF)
         }
     }
 
@@ -98,9 +101,6 @@ public final class VectorScoreScript implements LeafSearchScript, ExecutableScri
     }
 
     public void setBinaryEmbeddingReader(BinaryDocValues binaryEmbeddingReader) {
-        if(binaryEmbeddingReader == null) {
-            throw new IllegalStateException("binaryEmbeddingReader can't be null");
-        }
         this.binaryEmbeddingReader = binaryEmbeddingReader;
     }
 
