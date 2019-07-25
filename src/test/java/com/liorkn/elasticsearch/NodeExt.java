@@ -15,4 +15,8 @@ public class NodeExt extends Node {
         super(env, classpathPlugins, false);
     }
 
+    @Override
+    protected void registerDerivedNodeNameWithLogger(String nodeName) {
+
+    }
 }

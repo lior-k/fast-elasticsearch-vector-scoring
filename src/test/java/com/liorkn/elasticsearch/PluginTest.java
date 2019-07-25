@@ -37,6 +37,7 @@ public class PluginTest {
         // create test index
         String mappingJson = "{\n" +
                 "  \"mappings\": {\n" +
+                "    \"type\": {\n" +
                 "    \"properties\": {\n" +
                 "      \"embedding_vector\": {\n" +
                 "        \"doc_values\": true,\n" +
@@ -47,6 +48,7 @@ public class PluginTest {
                 "      },\n" +
                 "      \"vector\": {\n" +
                 "        \"type\": \"float\"\n" +
+                "        }\n" +
                 "      }\n" +
                 "    }\n" +
                 "  }\n" +
@@ -112,13 +114,13 @@ public class PluginTest {
         String resBody = EntityUtils.toString(res.getEntity());
         System.out.println(resBody);
         Assert.assertEquals("search should return status code 200", 200, res.getStatusLine().getStatusCode());
-        Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":{\"value\":" + objs.length));
-	// Testing Scores
+        Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":" + objs.length));
+	    // Testing Scores
         ArrayNode hitsJson = (ArrayNode)mapper.readTree(resBody).get("hits").get("hits");
         Assert.assertEquals(0.9970867, hitsJson.get(0).get("_score").asDouble(), 0);
         Assert.assertEquals(0.9780914, hitsJson.get(1).get("_score").asDouble(), 0);
 
-	// Test dot-product score function
+	    // Test dot-product score function
         body = "{" +
                 "  \"query\": {" +
                 "    \"function_score\": {" +
@@ -146,7 +148,7 @@ public class PluginTest {
         resBody = EntityUtils.toString(res.getEntity());
         System.out.println(resBody);
         Assert.assertEquals("search should return status code 200", 200, res.getStatusLine().getStatusCode());
-        Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":{\"value\":" + objs.length));
+        Assert.assertTrue(String.format("There should be %d documents in the search response", objs.length), resBody.contains("\"hits\":{\"total\":" + objs.length));
         // Testing Scores
         hitsJson = (ArrayNode)mapper.readTree(resBody).get("hits").get("hits");
         Assert.assertEquals(1.5480561, hitsJson.get(0).get("_score").asDouble(), 0);

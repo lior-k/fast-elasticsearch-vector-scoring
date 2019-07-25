@@ -63,7 +63,7 @@ public class EmbeddedElasticsearchServer {
                 settings.put("http.port", String.valueOf(this.port));
                 
                 Settings envSettings = settings.build();
-                Environment env = InternalSettingsPreparer.prepareEnvironment(envSettings, emptyMap(), null, null);
+                Environment env = InternalSettingsPreparer.prepareEnvironment(envSettings, null, emptyMap(), null);
                 // this a hack in order to load Groovy plug in since we want to enable the usage of scripts
                 node = new NodeExt(env, Arrays.asList(Netty4Plugin.class, PainlessPlugin.class, ReindexPlugin.class, VectorScoringPlugin.class));
                 node.start();
