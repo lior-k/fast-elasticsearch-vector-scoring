@@ -40,6 +40,7 @@ give it a try.
         "embedding_vector": {
         "type": "binary",
         "doc_values": true
+	}
 ```
 * The vector can be of any dimension
 
