@@ -10,8 +10,9 @@ give it a try.
 
 
 ## Elasticsearch version
-* Currently designed for Elasticsearch 5.6.0.
+* master branch is designed for Elasticsearch 5.6.0.
 * for Elasticsearch 7.1.0 use branch `es-7.1.0`
+* for Elasticsearch 6.8.1 use branch `es-6.8.1`
 * for Elasticsearch 5.2.2 use branch `es-5.2.2`
 * for Elasticsearch 2.4.4 use branch `es-2.4.4`
 
@@ -19,7 +20,7 @@ give it a try.
 ## Maven configuration
 * Clone the project
 * `mvn package` to compile the plugin as a zip file
-* In Elasticsearch run `elasticsearch-plugin install file:/PATH_TO_ZIP` to install plugin
+* In Elasticsearch run `elasticsearch-plugin install file://PATH_TO_ZIP` to install plugin
 
 
 

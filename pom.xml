@@ -48,7 +48,6 @@
             <version>2.7</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
@@ -86,12 +85,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.elasticsearch.plugin</groupId>-->
-            <!--<artifactId>transport-netty3-client</artifactId>-->
-            <!--<version>${elasticsearch.version}</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.codelibs.elasticsearch.module</groupId>
             <artifactId>lang-painless</artifactId>
@@ -114,7 +107,6 @@
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-client</artifactId>
             <version>${elasticsearch.version}</version>
-            <!--<version>5.6.8</version>-->
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
