@@ -24,8 +24,8 @@ public final class VectorScoreScript extends ScoreScript {
     private final float magnitude;
 
     @Override
-    public double execute() { 
-	try {
+    public double execute() {
+	    try {
             final byte[] bytes = binaryEmbeddingReader.binaryValue().bytes;
             final ByteArrayDataInput input = new ByteArrayDataInput(bytes);
             
@@ -34,11 +34,11 @@ public final class VectorScoreScript extends ScoreScript {
             final int len = input.readVInt();
             // in case vector is of different size
             if (len != inputVector.length * Float.BYTES) {
-                return 0.0;
+                // Failing in order not to hide potential bugs
+                throw new IllegalArgumentException("Input vector & indexed vector don't have the same dimensions");
             }
             
             float score = 0;
-
             if (cosine) {
             	float docVectorNorm = 0.0f;
                 for (int i = 0; i < inputVector.length; i++) {
@@ -60,8 +60,8 @@ public final class VectorScoreScript extends ScoreScript {
 
                 return Math.exp(score); // Convert dot-proudct range from (-INF to +INF) to (0 to +INF)
             }
-    	} catch (Exception e) {
-    		return 0.0;
+    	} catch (IOException e) {
+    		throw new UncheckedIOException(e); // again - Failing in order not to hide potential bugs
         }
 	}
     
@@ -118,9 +118,14 @@ public final class VectorScoreScript extends ScoreScript {
         
         try {
 			this.binaryEmbeddingReader = leafContext.reader().getBinaryDocValues(this.field);
-		} catch (IOException e) {
-			throw new IllegalStateException("binaryEmbeddingReader can't be null");
+            if(this.binaryEmbeddingReader == null) {
+                throw new IllegalStateException();
+            }
+		} catch (Exception e) {
+			throw new IllegalStateException("binaryEmbeddingReader can't be null, is '" + this.field +
+                    "' the right binary vector field name, if so, is it defined as a binary type in the index mapping?");
 		}
+
 	}
 	
 	public static class VectorScoreScriptFactory implements LeafFactory {
