@@ -16,7 +16,7 @@ import com.liorkn.elasticsearch.Util;
 public final class VectorScoreScript extends ScoreScript {
 
     private BinaryDocValues binaryEmbeddingReader;
-    
+
 	private final String field;
     private final boolean cosine;
 
@@ -25,19 +25,23 @@ public final class VectorScoreScript extends ScoreScript {
 
     @Override
     public double execute() {
+      if (binaryEmbeddingReader == null) {
+        return 0f;
+      }
+
 	    try {
             final byte[] bytes = binaryEmbeddingReader.binaryValue().bytes;
             final ByteArrayDataInput input = new ByteArrayDataInput(bytes);
-            
+
             input.readVInt(); // returns the number of values which should be 1, MUST appear hear since it affect the next calls
-            
+
             final int len = input.readVInt();
             // in case vector is of different size
             if (len != inputVector.length * Float.BYTES) {
                 // Failing in order not to hide potential bugs
                 throw new IllegalArgumentException("Input vector & indexed vector don't have the same dimensions");
             }
-            
+
             float score = 0;
             if (cosine) {
             	float docVectorNorm = 0.0f;
@@ -64,7 +68,7 @@ public final class VectorScoreScript extends ScoreScript {
     		throw new UncheckedIOException(e); // again - Failing in order not to hide potential bugs
         }
 	}
-    
+
 	@Override
     public void setDocument(int docId) {
 		 try {
@@ -73,7 +77,7 @@ public final class VectorScoreScript extends ScoreScript {
              throw new UncheckedIOException(e);
          }
     }
-    
+
     @SuppressWarnings("unchecked")
 	public VectorScoreScript(Map<String, Object> params, SearchLookup lookup, LeafReaderContext leafContext) {
 		super(params, lookup, leafContext);
@@ -115,15 +119,11 @@ public final class VectorScoreScript extends ScoreScript {
         } else {
             this.magnitude = 0.0f;
         }
-        
+
         try {
 			this.binaryEmbeddingReader = leafContext.reader().getBinaryDocValues(this.field);
-            if(this.binaryEmbeddingReader == null) {
-                throw new IllegalStateException();
-            }
 		} catch (Exception e) {
-			throw new IllegalStateException("binaryEmbeddingReader can't be null, is '" + this.field +
-                    "' the right binary vector field name, if so, is it defined as a binary type in the index mapping?");
+      this.binaryEmbeddingReader = null;
 		}
 
 	}
@@ -131,7 +131,7 @@ public final class VectorScoreScript extends ScoreScript {
 	public static class VectorScoreScriptFactory implements LeafFactory {
 		private final Map<String, Object> params;
         private final SearchLookup lookup;
-        
+
         public VectorScoreScriptFactory(Map<String, Object> params, SearchLookup lookup) {
             this.params = params;
             this.lookup = lookup;
