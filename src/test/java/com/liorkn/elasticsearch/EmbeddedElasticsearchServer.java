@@ -1,6 +1,5 @@
 package com.liorkn.elasticsearch;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.liorkn.elasticsearch.plugin.VectorScoringPlugin;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.client.Client;
@@ -111,7 +110,6 @@ public class EmbeddedElasticsearchServer {
         return RANDOM.nextInt(500) + 4200;
     }
 
-    @VisibleForTesting
     public int getPort() {
         return port;
     }

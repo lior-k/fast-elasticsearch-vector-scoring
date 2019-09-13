@@ -10,8 +10,9 @@ give it a try.
 
 
 ## Elasticsearch version
-* Currently designed for Elasticsearch 5.6.0.
-* for Elasticsearch 7.1.0 use branch `es-7.1.0`
+* Currently designed for Elasticsearch 7.1.0
+* for Elasticsearch 6.8.1 use branch `es-6.8.1`
+* for Elasticsearch 5.6.9 use branch `master`
 * for Elasticsearch 5.2.2 use branch `es-5.2.2`
 * for Elasticsearch 2.4.4 use branch `es-2.4.4`
 
@@ -19,7 +20,7 @@ give it a try.
 ## Maven configuration
 * Clone the project
 * `mvn package` to compile the plugin as a zip file
-* In Elasticsearch run `elasticsearch-plugin install file:/PATH_TO_ZIP` to install plugin
+* In the Elasticsearch root folder run `./bin/elasticsearch-plugin install file://<PATH_TO_ZIP>` to install plugin. for example: `./bin/elasticsearch-plugin install file:///Users/lior/dev/fast-elasticsearch-vector-scoring/target/releases/elasticsearch-binary-vector-scoring-7.1.zip`
 
 
 
@@ -39,6 +40,7 @@ give it a try.
         "embedding_vector": {
         "type": "binary",
         "doc_values": true
+	}
 ```
 * The vector can be of any dimension
 
@@ -195,17 +197,13 @@ func convertBase64ToArray(base64Str string) ([]float32, error) {
    2. `cosine`: Boolean. if true - use cosine-similarity, else use dot-product.
    3. `vector`: The vector (comma separated) to compare to.
  
-* Note:
-   Because scores produced by the script_score function must be non-negative on elasticsearch 7, I convert dot product score and cosine similarity score by using these simple equation.
-
+* Note **for ElasticSearch 7 only**:
+   Because scores produced by the script_score function must be non-negative on elasticsearch 7, I convert dot product score and cosine similarity score by using these simple equations:
     (changed dot product) = e^(original dot product)
-
     (changed cosine similarity) = ((original cosine similarity) + 1) / 2
 
     So you can use these simple equation to convert them to original score.
-
     (original dot product) = ln(changed dot product)
-
     (original cosine similarity) = (changed cosine similarity) * 2 - 1
 
 * Question: I've encountered the error `java.lang.IllegalStateException: binaryEmbeddingReader can't be null` while running the query. what should I do?
