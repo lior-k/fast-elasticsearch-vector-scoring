@@ -31,7 +31,7 @@
         <commons-io.version>2.4</commons-io.version>
         <httpcore.version>4.4.8</httpcore.version>
         <junit.version>4.12</junit.version>
-        <jackson.version>2.9.9.1</jackson.version>
+        <jackson.version>2.9.10.1</jackson.version>
     </properties>
     
     
