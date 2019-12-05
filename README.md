@@ -20,7 +20,7 @@ give it a try.
 ## Maven configuration
 * Clone the project
 * `mvn package` to compile the plugin as a zip file
-* In the Elasticsearch root folder run `./bin/elasticsearch-plugin install file://<PATH_TO_ZIP>` to install plugin. for example: `./bin/elasticsearch-plugin install file:///Users/lior/dev/fast-elasticsearch-vector-scoring/target/releases/elasticsearch-binary-vector-scoring-7.1.zip`
+* In the Elasticsearch root folder run `./bin/elasticsearch-plugin install file://<PATH_TO_ZIP>` to install plugin. for example: `./bin/elasticsearch-plugin install file:///Users/lior/dev/fast-elasticsearch-vector-scoring/target/releases/elasticsearch-binary-vector-scoring-7.1.0.zip`
 
 
 
@@ -142,7 +142,7 @@ func convertBase64ToArray(base64Str string) ([]float32, error) {
 * For querying the 100 KNN documents use this POST message on your ES index:
 
 
-    For ES 5.X and ES 7.1:
+    For ES 5.X and ES 7.X:
 ```
 {
   "query": {
