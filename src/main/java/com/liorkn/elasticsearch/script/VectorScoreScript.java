@@ -24,7 +24,7 @@ public final class VectorScoreScript extends ScoreScript {
     private final float magnitude;
 
     @Override
-    public double execute() {
+    public double execute(ExplanationHolder explanationHolder) {
 	    try {
             final byte[] bytes = binaryEmbeddingReader.binaryValue().bytes;
             final ByteArrayDataInput input = new ByteArrayDataInput(bytes);
@@ -127,8 +127,8 @@ public final class VectorScoreScript extends ScoreScript {
 		}
 
 	}
-	
-	public static class VectorScoreScriptFactory implements LeafFactory {
+
+    public static class VectorScoreScriptFactory implements LeafFactory {
 		private final Map<String, Object> params;
         private final SearchLookup lookup;
         

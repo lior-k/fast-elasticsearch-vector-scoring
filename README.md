@@ -10,7 +10,8 @@ give it a try.
 
 
 ## Elasticsearch version
-* Currently designed for Elasticsearch 7.1.0
+* Currently designed for Elasticsearch 7.5.0
+* for Elasticsearch 7.1.0 use branch `es-7.1.0`
 * for Elasticsearch 6.8.1 use branch `es-6.8.1`
 * for Elasticsearch 5.6.9 use branch `master`
 * for Elasticsearch 5.2.2 use branch `es-5.2.2`
@@ -20,7 +21,7 @@ give it a try.
 ## Maven configuration
 * Clone the project
 * `mvn package` to compile the plugin as a zip file
-* In the Elasticsearch root folder run `./bin/elasticsearch-plugin install file://<PATH_TO_ZIP>` to install plugin. for example: `./bin/elasticsearch-plugin install file:///Users/lior/dev/fast-elasticsearch-vector-scoring/target/releases/elasticsearch-binary-vector-scoring-7.1.zip`
+* In the Elasticsearch root folder run `./bin/elasticsearch-plugin install file://<PATH_TO_ZIP>` to install plugin. for example: `./bin/elasticsearch-plugin install file:///Users/lior/dev/fast-elasticsearch-vector-scoring/target/releases/elasticsearch-binary-vector-scoring-7.5.0.zip`
 
 
 
@@ -142,7 +143,7 @@ func convertBase64ToArray(base64Str string) ([]float32, error) {
 * For querying the 100 KNN documents use this POST message on your ES index:
 
 
-    For ES 5.X and ES 7.1:
+    For ES 5.X and ES 7.X:
 ```
 {
   "query": {
