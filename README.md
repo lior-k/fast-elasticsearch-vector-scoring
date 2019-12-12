@@ -12,6 +12,7 @@ give it a try.
 ## Elasticsearch version
 * master branch is designed for Elasticsearch 5.6.9.
 * for Elasticsearch 7.5.0 use branch `es-7.5.0`
+* for Elasticsearch 7.2.1 use branch `es-7.2.1`
 * for Elasticsearch 7.1.0 use branch `es-7.1`
 * for Elasticsearch 6.8.1 use branch `es-6.8.1`
 * for Elasticsearch 5.2.2 use branch `es-5.2.2`
