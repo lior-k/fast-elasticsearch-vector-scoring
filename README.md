@@ -198,12 +198,12 @@ func convertBase64ToArray(base64Str string) ([]float32, error) {
    2. `cosine`: Boolean. if true - use cosine-similarity, else use dot-product.
    3. `vector`: The vector (comma separated) to compare to.
  
-* Note **for ElasticSearch 7 only**:
-   Because scores produced by the script_score function must be non-negative on elasticsearch 7, I convert dot product score and cosine similarity score by using these simple equations:
+* Note **for ElasticSearch 6 and 7 only**:
+   Because scores produced by the script_score function must be non-negative on elasticsearch 7, We convert the dot product score and cosine similarity score by using these simple equations:
     (changed dot product) = e^(original dot product)
     (changed cosine similarity) = ((original cosine similarity) + 1) / 2
 
-    So you can use these simple equation to convert them to original score.
+    We can use these simple equation to convert them to original score.
     (original dot product) = ln(changed dot product)
     (original cosine similarity) = (changed cosine similarity) * 2 - 1
 
