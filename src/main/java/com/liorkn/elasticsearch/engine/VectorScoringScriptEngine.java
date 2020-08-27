@@ -2,7 +2,10 @@ package com.liorkn.elasticsearch.engine;
 
 import com.liorkn.elasticsearch.script.VectorScoreScript;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import org.elasticsearch.script.ScriptContext;
 import org.elasticsearch.script.ScriptEngine;
@@ -32,5 +35,15 @@ public class VectorScoringScriptEngine implements ScriptEngine {
 
     	ScoreScript.Factory factory = VectorScoreScript.VectorScoreScriptFactory::new;
         return context.factoryClazz.cast(factory);
+    }
+
+    @Override
+    public void close() throws IOException {
+
+    }
+
+    @Override
+    public Set<ScriptContext<?>> getSupportedContexts() {
+        return Collections.singleton(ScoreScript.CONTEXT);
     }
 }
