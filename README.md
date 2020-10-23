@@ -10,7 +10,8 @@ give it a try.
 
 
 ## Elasticsearch version
-* Currently designed for Elasticsearch 7.5.0
+* Currently designed for Elasticsearch 7.5.2
+* for Elasticsearch 7.5.0 use branch `es-7.5.0`
 * for Elasticsearch 7.1.0 use branch `es-7.1.0`
 * for Elasticsearch 6.8.1 use branch `es-6.8.1`
 * for Elasticsearch 5.6.9 use branch `master`
@@ -21,7 +22,7 @@ give it a try.
 ## Maven configuration
 * Clone the project
 * `mvn package` to compile the plugin as a zip file
-* In the Elasticsearch root folder run `./bin/elasticsearch-plugin install file://<PATH_TO_ZIP>` to install plugin. for example: `./bin/elasticsearch-plugin install file:///Users/lior/dev/fast-elasticsearch-vector-scoring/target/releases/elasticsearch-binary-vector-scoring-7.5.0.zip`
+* In the Elasticsearch root folder run `./bin/elasticsearch-plugin install file://<PATH_TO_ZIP>` to install plugin. for example: `./bin/elasticsearch-plugin install file:///Users/lior/dev/fast-elasticsearch-vector-scoring/target/releases/elasticsearch-binary-vector-scoring-7.5.2.zip`
 
 
 
