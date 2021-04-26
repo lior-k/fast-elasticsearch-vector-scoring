@@ -28,7 +28,7 @@
 
         <tests.ifNoTests>warn</tests.ifNoTests>
 		<elasticsearch.version>5.6.9</elasticsearch.version>
-        <commons-io.version>2.4</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <httpcore.version>4.4.8</httpcore.version>
         <junit.version>4.12</junit.version>
         <jackson.version>2.9.10.5</jackson.version>
