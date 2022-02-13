@@ -7,6 +7,7 @@ This Plugin allows you to score Elasticsearch documents based on embedding-vecto
 give it a try.
 * I gained this substantial speed improvement by using the lucene index directly
 * I developed it for my workplace which needs to pick KNN from a set of ~4M vectors. our current ES setup is able to answer this in ~80ms
+* **Note: Elasticsearch introduced a similar vector similarity functions in version 7.4 and above. [Elasticsearch version 8.0] (https://www.elastic.co/blog/introducing-approximate-nearest-neighbor-search-in-elasticsearch-8-0) includes native ANN support. This makes this plug-in obsolete for new Elasticsearch versions, unless for some reason their implementation is slower than this plugin**.
 
 
 ## Elasticsearch version
